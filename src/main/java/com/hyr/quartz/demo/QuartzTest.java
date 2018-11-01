@@ -68,18 +68,26 @@ public class QuartzTest {
         // cronScheduleBuilder.withMisfireHandlingInstructionDoNothing(); // 所有的misfire不管，执行下一个周期的任务)
         // cronScheduleBuilder.withMisfireHandlingInstructionIgnoreMisfires(); //所有misfire的任务会马上执行
 
-        Trigger trigger = TriggerBuilder.newTrigger()
+        Trigger trigger1 = TriggerBuilder.newTrigger()
                 .withDescription("")
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("ramTrigger", "ramTriggerGroup")
+                .withIdentity("ramTrigger1", "ramTriggerGroup")
+                //.withSchedule(SimpleScheduleBuilder.simpleSchedule())
+                .startAt(statTime)  //默认当前时间启动
+                .withSchedule(cronScheduleBuilder) //两秒执行一次
+                .build();
+        Trigger trigger2 = TriggerBuilder.newTrigger()
+                .withDescription("")
+                .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
+                .withIdentity("ramTrigger2", "ramTriggerGroup")
                 //.withSchedule(SimpleScheduleBuilder.simpleSchedule())
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(cronScheduleBuilder) //两秒执行一次
                 .build();
 
         //5.注册任务和定时器
-        scheduler.scheduleJob(jb, trigger);
-        scheduler.scheduleJob(jb2,trigger);
+        scheduler.scheduleJob(jb, trigger1);
+        scheduler.scheduleJob(jb2,trigger2);
 
         //6.启动 调度器
         scheduler.start();
