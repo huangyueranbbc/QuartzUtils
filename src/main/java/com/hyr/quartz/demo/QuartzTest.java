@@ -23,6 +23,7 @@ public class QuartzTest {
         props.setProperty("org.quartz.threadPool.class","org.quartz.simpl.SimpleThreadPool");
         props.setProperty("org.quartz.threadPool.threadCount","4"); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority","5"); // 线程优先级 5默认优先级
+        props.setProperty("org.quartz.threadPool.threadNamePrefix","quartz_"); // 工作线程池中线程名称的前缀将被附加前缀
 
         StdSchedulerFactory sf = new StdSchedulerFactory();
         sf.initialize(props);
@@ -40,6 +41,15 @@ public class QuartzTest {
                 .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
                 .withDescription("this is a ram job") //job的描述
                 .withIdentity("ramJob", "ramGroup") //job 的name和group
+                .usingJobData("jobDesc", "job_01") // 属性注入
+                .build();
+
+        JobDetail jb2 = JobBuilder.newJob(MyJob.class)
+                .storeDurably(true) // 如果一个job是非持久的，当没有活跃的trigger与之关联的时候，会被自动地从scheduler中删除
+                .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
+                .withDescription("this is a ram job2") //job的描述
+                .withIdentity("ramJob2", "ramGroup") //job 的name和group
+                .usingJobData("jobDesc", "job_02") // 属性注入
                 .build();
 
         //任务运行的时间，SimpleSchedle类型触发器有效
@@ -69,6 +79,7 @@ public class QuartzTest {
 
         //5.注册任务和定时器
         scheduler.scheduleJob(jb, trigger);
+        scheduler.scheduleJob(jb2,trigger);
 
         //6.启动 调度器
         scheduler.start();

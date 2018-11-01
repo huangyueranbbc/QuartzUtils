@@ -11,6 +11,9 @@ public class MyJob implements Job {
 
     private static Logger _log = Logger.getLogger(MyJob.class);
 
+    // 属性注入
+    private String jobDesc;
+
     /**
      * execute方法中仅允许抛出一种类型的异常（包括RuntimeExceptions），即JobExecutionException。你的job可以使用该异常告诉scheduler，你希望如何来处理发生的异常。
      * 如果job发错错误,quartz提供两种方式解决
@@ -23,7 +26,7 @@ public class MyJob implements Job {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         JobKey jobKey = jobExecutionContext.getJobDetail().getKey();
         try {
-            _log.info(jobKey + " Say hello to Quartz" + new Date());
+            _log.info(jobKey + " Say hello to Quartz. " + jobDesc + "  " + new Date());
             // throw new Exception(); // 抛出测试异常
         } catch (Exception e) {
             _log.error(jobKey + " execute has error.", e);
@@ -40,4 +43,11 @@ public class MyJob implements Job {
         }
     }
 
+    public String getJobDesc() {
+        return jobDesc;
+    }
+
+    public void setJobDesc(String jobDesc) {
+        this.jobDesc = jobDesc;
+    }
 }
