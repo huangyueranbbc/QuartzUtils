@@ -8,6 +8,7 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Date;
+import java.util.Properties;
 
 /**
  * This is a RAM Store Quartz!
@@ -18,10 +19,15 @@ public class QuartzTest {
 
     public static void main(String[] args) throws SchedulerException {
         //1.创建Scheduler的工厂
-        SchedulerFactory sf = new StdSchedulerFactory();
+        Properties props = new Properties();
+        props.setProperty("org.quartz.threadPool.class","org.quartz.simpl.SimpleThreadPool");
+        props.setProperty("org.quartz.threadPool.threadCount","4"); // 线程数
+        props.setProperty("org.quartz.threadPool.threadPriority","5"); // 线程优先级 5默认优先级
+
+        StdSchedulerFactory sf = new StdSchedulerFactory();
+        sf.initialize(props);
         //2.从工厂中获取调度器实例
         Scheduler scheduler = sf.getScheduler();
-
 
         ListenerManager listenerManager = scheduler.getListenerManager();
         listenerManager.addSchedulerListener(new MySchedulerListener());
