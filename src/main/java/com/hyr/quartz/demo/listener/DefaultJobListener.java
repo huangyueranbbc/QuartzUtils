@@ -3,16 +3,27 @@ package com.hyr.quartz.demo.listener;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*******************************************************************************
- * @date 2018-10-19 下午 4:04
+ * @date 2018-11-11 下午 11:11
  * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
  * @Description: JobListener 任务监听器
  ******************************************************************************/
-public class MyJobListener implements JobListener {
+public class DefaultJobListener implements JobListener {
+
+    private static Logger log = LoggerFactory.getLogger(DefaultJobListener.class);
+
+    private String name; // 监听器名称
+
     @Override
     public String getName() {
-        return "MyJobListener";
+        return this.name;
+    }
+
+    public DefaultJobListener(String name) {
+        this.name = name;
     }
 
     /**
@@ -22,7 +33,8 @@ public class MyJobListener implements JobListener {
      */
     @Override
     public void jobToBeExecuted(JobExecutionContext jobExecutionContext) {
-        System.out.println("准备执行. job:" + jobExecutionContext.getJobDetail().getKey());
+        String jobName = jobExecutionContext.getJobDetail().getKey().getName();
+        log.info(getName() + " - the job:{} is will to exec.", jobName);
     }
 
     /**
@@ -32,7 +44,8 @@ public class MyJobListener implements JobListener {
      */
     @Override
     public void jobExecutionVetoed(JobExecutionContext jobExecutionContext) {
-        System.out.println("执行被拒绝. job:" + jobExecutionContext.getJobDetail().getKey());
+        String jobName = jobExecutionContext.getJobDetail().getKey().getName();
+        log.warn(getName() + " - the job:{} is vetoed.", jobName);
     }
 
 
@@ -44,8 +57,8 @@ public class MyJobListener implements JobListener {
      */
     @Override
     public void jobWasExecuted(JobExecutionContext jobExecutionContext, JobExecutionException e) {
-        System.out.println("执行完毕. job:" + jobExecutionContext.getJobDetail().getKey());
-
+        String jobName = jobExecutionContext.getJobDetail().getKey().getName();
+        log.info(getName() + " - the job:{} is exec success.", jobName);
     }
 
 }

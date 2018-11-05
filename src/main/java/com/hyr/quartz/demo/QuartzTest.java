@@ -1,39 +1,47 @@
 package com.hyr.quartz.demo;
 
-import com.hyr.quartz.demo.listener.MyJobListener;
-import com.hyr.quartz.demo.listener.MySchedulerListener;
-import com.hyr.quartz.demo.listener.MyTriggerListener;
-import org.apache.log4j.Logger;
+import com.hyr.quartz.demo.listener.DefaultJobListener;
+import com.hyr.quartz.demo.listener.DefaultSchedulerListener;
+import com.hyr.quartz.demo.listener.DefaultTriggerListener;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.Properties;
 
-/**
- * This is a RAM Store Quartz!
- */
+/*******************************************************************************
+ * @date 2018-11-01 下午 3:50
+ * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
+ * @Description: Quartz Demo
+ ******************************************************************************/
 public class QuartzTest {
 
-    private static Logger _log = Logger.getLogger(QuartzTest.class);
+    private static Logger _log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
 
     public static void main(String[] args) throws SchedulerException {
         //1.创建Scheduler的工厂
         Properties props = new Properties();
-        props.setProperty("org.quartz.threadPool.class","org.quartz.simpl.SimpleThreadPool");
-        props.setProperty("org.quartz.threadPool.threadCount","4"); // 线程数
-        props.setProperty("org.quartz.threadPool.threadPriority","5"); // 线程优先级 5默认优先级
-        props.setProperty("org.quartz.threadPool.threadNamePrefix","quartz_"); // 工作线程池中线程名称的前缀将被附加前缀
+        props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
+        props.setProperty("org.quartz.threadPool.threadCount", "4"); // 线程数
+        props.setProperty("org.quartz.threadPool.threadPriority", "5"); // 线程优先级 5默认优先级
+        props.setProperty("org.quartz.threadPool.threadNamePrefix", "quartz_"); // 工作线程池中线程名称的前缀将被附加前缀
+        props.setProperty("org.quartz.scheduler.instanceName", "scheduler_1"); // 实例名称
 
-        StdSchedulerFactory sf = new StdSchedulerFactory();
-        sf.initialize(props);
+
+        StdSchedulerFactory sf = new StdSchedulerFactory(props);
         //2.从工厂中获取调度器实例
-        Scheduler scheduler = sf.getScheduler();
+        Scheduler scheduler1 = sf.getScheduler();
+        System.out.println(scheduler1.getSchedulerName());
+        System.out.println(sf.getAllSchedulers().size());
 
-        ListenerManager listenerManager = scheduler.getListenerManager();
-        listenerManager.addSchedulerListener(new MySchedulerListener());
-        listenerManager.addJobListener(new MyJobListener()); // 任务监听
-        listenerManager.addTriggerListener(new MyTriggerListener()); // 触发器监听
+
+
+        ListenerManager listenerManager = scheduler1.getListenerManager();
+        listenerManager.addSchedulerListener(new DefaultSchedulerListener("DefaultSchedulerListener"));
+        listenerManager.addJobListener(new DefaultJobListener("DefaultJobListener")); // 任务监听
+        listenerManager.addTriggerListener(new DefaultTriggerListener("DefaultTriggerListener")); // 触发器监听
 
         //3.创建JobDetail
         JobDetail jb = JobBuilder.newJob(MyJob.class)
@@ -59,6 +67,10 @@ public class QuartzTest {
         //4.创建Trigger
         //使用SimpleScheduleBuilder或者CronScheduleBuilder
         CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule("0/2 * * * * ?");
+
+        //SimpleScheduleBuilder
+        //SimpleScheduleBuilder simpleScheduleBuilder = SimpleScheduleBuilder.simpleSchedule();
+        //simpleScheduleBuilder.withIntervalInSeconds(5);
 
         // 设置misfire错失补偿机制
 
@@ -86,11 +98,11 @@ public class QuartzTest {
                 .build();
 
         //5.注册任务和定时器
-        scheduler.scheduleJob(jb, trigger1);
-        scheduler.scheduleJob(jb2,trigger2);
+        scheduler1.scheduleJob(jb, trigger1);
+        scheduler1.scheduleJob(jb2, trigger2);
 
         //6.启动 调度器
-        scheduler.start();
+        scheduler1.start();
         _log.info("启动时间 ： " + new Date());
 
         try {
@@ -98,6 +110,8 @@ public class QuartzTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // scheduler1.shutdown();
 
         // scheduler.deleteJob(jb.getKey()); // 删除job
 

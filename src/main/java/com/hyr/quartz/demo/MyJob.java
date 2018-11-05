@@ -1,15 +1,17 @@
 package com.hyr.quartz.demo;
 
-import org.apache.log4j.Logger;
 import org.quartz.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
-@DisallowConcurrentExecution // 不允许并发执行多个Job实例
+@DisallowConcurrentExecution // 不允许并发执行多个Job实例。 当前Job执行完毕后，才会执行下一个。一进一出。
 @PersistJobDataAfterExecution // 每次执行JOB后，更新Job内容
 public class MyJob implements Job {
 
-    private static Logger _log = Logger.getLogger(MyJob.class);
+    //    private static Logger _log = Logger.getLogger(MyJob.class);
+    private static Logger _log = LoggerFactory.getLogger(MyJob.class);
 
     // 属性注入
     private String jobDesc;
@@ -27,6 +29,11 @@ public class MyJob implements Job {
         JobKey jobKey = jobExecutionContext.getJobDetail().getKey();
         try {
             _log.info(jobKey + " Say hello to Quartz. " + jobDesc + "  " + new Date());
+            long start = System.currentTimeMillis();
+            JobBusiness.instances.update();
+            long end = System.currentTimeMillis();
+            _log.info("UpdateJob cost time is " + (end - start));
+            // Thread.sleep(10000); // 睡眠10秒，测试DisallowConcurrentExecution
             // throw new Exception(); // 抛出测试异常
         } catch (Exception e) {
             _log.error(jobKey + " execute has error.", e);

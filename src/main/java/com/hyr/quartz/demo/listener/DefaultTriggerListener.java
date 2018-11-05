@@ -3,19 +3,32 @@ package com.hyr.quartz.demo.listener;
 import org.quartz.JobExecutionContext;
 import org.quartz.Trigger;
 import org.quartz.TriggerListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /*******************************************************************************
- * @date 2018-10-19 下午 4:13
+ * @date 2018-11-11 下午 11:11
  * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
  * @Description: TriggerListener 触发器监听器
  ******************************************************************************/
-public class MyTriggerListener implements TriggerListener {
+public class DefaultTriggerListener implements TriggerListener {
 
-    private static int execCount = 0;
+    private static Logger log = LoggerFactory.getLogger(DefaultTriggerListener.class);
+
+    private static Map<String, Long> jobStatus = new HashMap<>();
+
+    private String name; // 监听器名称
 
     @Override
     public String getName() {
-        return "MyTriggerListener";
+        return this.name;
+    }
+
+    public DefaultTriggerListener(String name) {
+        this.name = name;
     }
 
     /**
@@ -27,7 +40,9 @@ public class MyTriggerListener implements TriggerListener {
      */
     @Override
     public void triggerFired(Trigger trigger, JobExecutionContext jobExecutionContext) {
-        System.out.println("Trigger监听器：MyTriggerListener.triggerFired()");
+        String triggerName = trigger.getKey().getName();
+        String jobName = jobExecutionContext.getJobDetail().getKey().getName();
+        log.info(getName() + " - the triggerName:{} is trigger. jobName:{}", triggerName, jobName);
     }
 
     /**
@@ -40,10 +55,6 @@ public class MyTriggerListener implements TriggerListener {
      */
     @Override
     public boolean vetoJobExecution(Trigger trigger, JobExecutionContext jobExecutionContext) {
-        System.out.println("Trigger监听器：MyTriggerListener.vetoJobExecution()");
-        if (execCount == 10) { // job执行10次，终止
-            return true;
-        }
         return false;
     }
 
@@ -56,7 +67,9 @@ public class MyTriggerListener implements TriggerListener {
      */
     @Override
     public void triggerMisfired(Trigger trigger) {
-        System.out.println("Trigger监听器：MyTriggerListener.triggerMisfired()");
+        String triggerName = trigger.getKey().getName();
+        String jobName = trigger.getJobKey().getName();
+        log.warn(getName() + " - the job is misfire. triggerName:{} ,jobName:{}", triggerName, jobName);
     }
 
     /**
@@ -69,7 +82,13 @@ public class MyTriggerListener implements TriggerListener {
      */
     @Override
     public void triggerComplete(Trigger trigger, JobExecutionContext jobExecutionContext, Trigger.CompletedExecutionInstruction completedExecutionInstruction) {
-        execCount++;
-        System.out.println("Trigger监听器：MyTriggerListener.triggerComplete() count:" + execCount);
+        // FIXME 测试执行次数 是否正常。 生产环境删除
+        String triggerName = trigger.getKey().getName();
+        String jobName = jobExecutionContext.getJobDetail().getKey().getName();
+        if (!jobStatus.containsKey(jobName)) {
+            jobStatus.put(jobName, 0L);
+        }
+        jobStatus.put(jobName, jobStatus.get(jobName) + 1); // 执行一次
+        log.info(getName() + " - the job:{} is exec complete. count:{} ,triggerName:{}", jobName, jobStatus.get(jobName), triggerName);
     }
 }
