@@ -10,7 +10,10 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /*******************************************************************************
- * @date 2018-11-01 下午 3:50
+ * 版权信息：博睿宏远科技发展有限公司
+ * Copyright: Copyright (c) 2007博睿宏远科技发展有限公司,Inc.All Rights Reserved.
+ *
+ * @date 2018-11-11 下午 11:11
  * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
  * @Description: Quartz工具类
  ******************************************************************************/
@@ -45,18 +48,8 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         props.setProperty("org.quartz.threadPool.threadCount", "4"); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(Thread.NORM_PRIORITY)); // 线程优先级 5默认优先级
-        props.setProperty("org.quartz.threadPool.threadNamePrefix", "quartz_"); // 工作线程池中线程名称的前缀将被附加前缀
+        props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
-        return new StdSchedulerFactory(props);
-    }
-
-    public static StdSchedulerFactory getStdSchedulerFactory() throws SchedulerException {
-        Properties props = new Properties();
-        props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-        props.setProperty("org.quartz.threadPool.threadCount", "4"); // 线程数
-        props.setProperty("org.quartz.threadPool.threadPriority", "5"); // 线程优先级 5默认优先级
-        props.setProperty("org.quartz.threadPool.threadNamePrefix", "quartz_"); // 工作线程池中线程名称的前缀将被附加前缀
-        props.setProperty("org.quartz.scheduler.instanceName", "scheduler_1"); // 实例名称
         return new StdSchedulerFactory(props);
     }
 
@@ -108,7 +101,35 @@ public class QuartzUtils {
         } catch (Exception e) {
             log.error("add job error. jobName:{}, timer:{}", jobName, timer, e);
         }
+    }
 
+    /**
+     * 延时启动
+     *
+     * @param scheduler    调度器
+     * @param job          JobClass
+     * @param initialDelay 首次延时启动时间
+     * @param timeUnit     延时启动时间单位
+     * @param timer        cron表达式
+     * @param jobName      任务名称
+     * @param groupName    组名
+     * @param dataMap      属性注入 以JavaBean的形式注入，需要该属性名和set方法
+     */
+    public static void scheduleWithFixedDelayByCron(Scheduler scheduler, Class<? extends Job> job, long initialDelay, TimeUnit timeUnit, String timer, String jobName, String groupName, JobDataMap dataMap) {
+        try {
+            long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
+            JobDetail jobDetail = getJobDetailBindData(job, jobName, groupName, dataMap);
+            long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
+            Date statTime = new Date(tmpTime); // 启动时间
+
+            Trigger trigger = getTrigger(timer, jobName, groupName, statTime);
+
+            scheduler.scheduleJob(jobDetail, trigger);
+            scheduler.start();
+            log.info("job:{} is start. timer:{}", jobName, timer);
+        } catch (Exception e) {
+            log.error("add job error. jobName:{}, timer:{}", jobName, timer, e);
+        }
     }
 
     /**
@@ -138,7 +159,36 @@ public class QuartzUtils {
         } catch (Exception e) {
             log.error("add job error. jobName:{}, intervalTime:{}", jobName, intervalTime, e);
         }
+    }
 
+    /**
+     * @param scheduler    调度器
+     * @param job          JobClass
+     * @param initialDelay 首次延时启动时间
+     * @param timeUnit     延时启动时间单位
+     * @param delay        间隔时间
+     * @param repeatCount  重复执行次数 -1无限次数 0不执行
+     * @param jobName      任务名称
+     * @param groupName    组名
+     * @param dataMap      属性注入 以JavaBean的形式注入，需要该属性名和set方法
+     */
+    public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName, JobDataMap dataMap) {
+        long intervalTime = timeUnit.toMillis(delay);
+        try {
+            addHook(scheduler, jobName, groupName);
+            long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
+            JobDetail jobDetail = getJobDetailBindData(job, jobName, groupName, dataMap);
+            long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
+            Date statTime = new Date(tmpTime); // 启动时间
+
+            Trigger trigger = getSimpleTrigger(intervalTime, jobName, groupName, repeatCount, statTime);
+
+            scheduler.scheduleJob(jobDetail, trigger);
+            scheduler.start();
+            log.info("job:{} is start. delay:{}", jobName, delay);
+        } catch (Exception e) {
+            log.error("add job error. jobName:{}, intervalTime:{}", jobName, intervalTime, e);
+        }
     }
 
     private static Trigger getSimpleTrigger(long delay, String jobName, String groupName, int repeatCount, Date statTime) {
@@ -148,10 +198,34 @@ public class QuartzUtils {
 
         return TriggerBuilder.newTrigger()
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("Trigger:" + jobName, "Trigger:" + groupName)
-                //.withSchedule(SimpleScheduleBuilder.simpleSchedule())
+                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(simpleScheduleBuilder) //两秒执行一次
+                .build();
+    }
+
+    /**
+     * 给trigger下所有job注入属性
+     *
+     * @param delay       间隔时间
+     * @param repeatCount 重复执行次数 -1无限次数 0不执行
+     * @param jobName     任务名称
+     * @param groupName   组名
+     * @param statTime    开始执行时间
+     * @param dataMap     属性注入 以JavaBean的形式注入，需要该属性名和set方法
+     * @return
+     */
+    private static Trigger getSimpleTriggerBindData(long delay, String jobName, String groupName, int repeatCount, Date statTime, JobDataMap dataMap) {
+        SimpleScheduleBuilder simpleScheduleBuilder = SimpleScheduleBuilder.simpleSchedule();
+        simpleScheduleBuilder.withIntervalInMilliseconds(delay).withRepeatCount(repeatCount);
+        simpleScheduleBuilder.withMisfireHandlingInstructionFireNow(); // 以当前时间为触发频率立即触发执行
+
+        return TriggerBuilder.newTrigger()
+                .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
+                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
+                .startAt(statTime)  //默认当前时间启动
+                .withSchedule(simpleScheduleBuilder) //两秒执行一次
+                .usingJobData(dataMap) // 输入属性
                 .build();
     }
 
@@ -160,12 +234,37 @@ public class QuartzUtils {
         cronScheduleBuilder.withMisfireHandlingInstructionFireAndProceed(); // 默认 以当前时间为触发频率立刻触发一次执行,然后按照Cron频率依次执行.会合并部分的misfire,正常执行下一个周期的任务.
         // cronScheduleBuilder.withMisfireHandlingInstructionDoNothing(); // 所有的misfire不管，执行下一个周期的任务)
         // cronScheduleBuilder.withMisfireHandlingInstructionIgnoreMisfires(); //所有misfire的任务会马上执行
+
         return TriggerBuilder.newTrigger()
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("Trigger:" + jobName, "Trigger:" + groupName)
-                //.withSchedule(SimpleScheduleBuilder.simpleSchedule())
+                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(cronScheduleBuilder) //两秒执行一次
+                .build();
+    }
+
+    /**
+     * 给trigger下所有的Job注入属性
+     *
+     * @param timer     cron表达式
+     * @param jobName   任务名称
+     * @param groupName 组名
+     * @param statTime  开始执行时间
+     * @param dataMap   属性注入 以JavaBean的形式注入，需要该属性名和set方法
+     * @return
+     */
+    private static Trigger getTriggerBindData(String timer, String jobName, String groupName, Date statTime, JobDataMap dataMap) {
+        CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule(timer);
+        cronScheduleBuilder.withMisfireHandlingInstructionFireAndProceed(); // 默认 以当前时间为触发频率立刻触发一次执行,然后按照Cron频率依次执行.会合并部分的misfire,正常执行下一个周期的任务.
+        // cronScheduleBuilder.withMisfireHandlingInstructionDoNothing(); // 所有的misfire不管，执行下一个周期的任务)
+        // cronScheduleBuilder.withMisfireHandlingInstructionIgnoreMisfires(); //所有misfire的任务会马上执行
+
+        return TriggerBuilder.newTrigger()
+                .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
+                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
+                .startAt(statTime)  //默认当前时间启动
+                .withSchedule(cronScheduleBuilder) //两秒执行一次
+                .usingJobData(dataMap) // 注入属性
                 .build();
     }
 
@@ -174,7 +273,23 @@ public class QuartzUtils {
                 .storeDurably(true) // 如果一个job是非持久的，当没有活跃的trigger与之关联的时候，会被自动地从scheduler中删除
                 .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
                 .withIdentity(jobName, groupName) //job 的name和group
-                .usingJobData("jobDesc", "job_01") // 属性注入
+                //.usingJobData("jobDesc", "job_01") // 属性注入
+                .build();
+    }
+
+    /**
+     * @param job       任务对象
+     * @param jobName   任务名称
+     * @param groupName 组名
+     * @param dataMap   属性注入 以JavaBean的形式注入，需要该属性名和set方法
+     * @return
+     */
+    private static JobDetail getJobDetailBindData(Class<? extends Job> job, String jobName, String groupName, JobDataMap dataMap) {
+        return JobBuilder.newJob(job)
+                .storeDurably(true) // 如果一个job是非持久的，当没有活跃的trigger与之关联的时候，会被自动地从scheduler中删除
+                .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
+                .withIdentity(jobName, groupName) //job 的name和group
+                .usingJobData(dataMap) // 属性注入
                 .build();
     }
 
@@ -196,7 +311,7 @@ public class QuartzUtils {
             @Override
             public void run() {
                 try {
-                    removeJob(scheduler,jobName,groupName);
+                    removeJob(scheduler, jobName, groupName);
                 } catch (SchedulerException e) {
                     log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName);
                 }
