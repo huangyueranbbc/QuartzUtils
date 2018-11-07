@@ -448,9 +448,10 @@ public class QuartzUtils {
                     if (stdSchedulerFactory != null) {
                         for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
                             scheduler.shutdown(true); // true:等待job执行完毕
+                            log.info("scheduler shutdown success. scheduler:{}", scheduler.getSchedulerName());
                         }
                     }
-                    log.info("scheduler shutdown success.");
+
                 } catch (SchedulerException e) {
                     log.error("shutdown scheduler error.");
                 }
