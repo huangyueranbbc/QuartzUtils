@@ -5,7 +5,6 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.plugins.history.LoggingJobHistoryPlugin;
 import org.quartz.plugins.history.LoggingTriggerHistoryPlugin;
 import org.quartz.plugins.management.ShutdownHookPlugin;
-import org.quartz.simpl.CascadingClassLoadHelper;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
