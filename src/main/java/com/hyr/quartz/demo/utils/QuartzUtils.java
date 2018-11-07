@@ -400,6 +400,7 @@ public class QuartzUtils {
         Thread schedulerShutdownHook = new Thread() {
             @Override
             public void run() {
+                assert schedulerPlugin != null;
                 schedulerPlugin.shutdown();
                 log.info("scheduler plugin shutdown success.");
             }
@@ -420,6 +421,7 @@ public class QuartzUtils {
             @Override
             public void run() {
                 try {
+                    assert scheduler != null;
                     removeJob(scheduler, jobName, groupName);
                     log.info("job:{} shutdown success.", jobName);
                 } catch (SchedulerException e) {
@@ -441,6 +443,7 @@ public class QuartzUtils {
             @Override
             public void run() {
                 try {
+                    assert stdSchedulerFactory != null;
                     for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
                         scheduler.shutdown(true); // true:等待job执行完毕
                     }
