@@ -369,7 +369,7 @@ public class QuartzUtils {
             triggerLogPlugin.start();
             jobLogPlugin.start();
         } catch (SchedulerException e) {
-            log.error("start log plugin error.",e);
+            log.error("start log plugin error.", e);
         }
     }
 
@@ -386,7 +386,7 @@ public class QuartzUtils {
             addPluginHook(shutdownHookPlugin);
             shutdownHookPlugin.start();
         } catch (SchedulerException e) {
-            log.error("start shutdown hook plugin error.",e);
+            log.error("start shutdown hook plugin error.", e);
         }
     }
 
@@ -399,13 +399,11 @@ public class QuartzUtils {
         Thread schedulerShutdownHook = new Thread() {
             @Override
             public void run() {
-                if (schedulerPlugin != null) {
-                    schedulerPlugin.shutdown();
-                }
+                assert schedulerPlugin != null;
+                schedulerPlugin.shutdown();
                 log.info("scheduler plugin shutdown success.");
             }
         };
-
         shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.PLUGIN_PRIORITY.value());
     }
 
@@ -421,12 +419,11 @@ public class QuartzUtils {
             @Override
             public void run() {
                 try {
-                    if (scheduler != null) {
-                        removeJob(scheduler, jobName, groupName);
-                    }
+                    assert scheduler != null;
+                    removeJob(scheduler, jobName, groupName);
                     log.info("job:{} shutdown success.", jobName);
                 } catch (SchedulerException e) {
-                    log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName,e);
+                    log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName, e);
                 }
             }
         };
@@ -444,19 +441,16 @@ public class QuartzUtils {
             @Override
             public void run() {
                 try {
-                    if (stdSchedulerFactory != null) {
-                        for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
-                            scheduler.shutdown(true); // true:等待job执行完毕
-                            log.info("scheduler shutdown success. scheduler:{}", scheduler.getSchedulerName());
-                        }
+                    assert stdSchedulerFactory != null && stdSchedulerFactory.getAllSchedulers() != null;
+                    for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
+                        scheduler.shutdown(true); // true:等待job执行完毕
+                        log.info("scheduler shutdown success. scheduler:{}", scheduler.getSchedulerName());
                     }
-
                 } catch (SchedulerException e) {
-                    log.error("shutdown scheduler error.",e);
+                    log.error("shutdown scheduler error.", e);
                 }
             }
         };
-
         // 注:该优先级要比Job的Hook优先级低
         shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.SCHEDULER_PRIORITY.value());
     }
