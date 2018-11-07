@@ -6,6 +6,11 @@ import com.hyr.quartz.demo.listener.DefaultSchedulerListener;
 import com.hyr.quartz.demo.listener.DefaultTriggerListener;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.plugins.history.LoggingJobHistoryPlugin;
+import org.quartz.plugins.history.LoggingTriggerHistoryPlugin;
+import org.quartz.plugins.management.ShutdownHookPlugin;
+import org.quartz.simpl.CascadingClassLoadHelper;
+import org.quartz.simpl.SimpleClassLoadHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +27,8 @@ public class QuartzTest {
     private static Logger _log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
 
     public static void main(String[] args) throws SchedulerException {
+
+
         //1.创建Scheduler的工厂
         Properties props = new Properties();
         props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
@@ -37,6 +44,20 @@ public class QuartzTest {
         System.out.println(scheduler1.getSchedulerName());
         System.out.println(sf.getAllSchedulers().size());
 
+        // shutdownhook plugin
+        ShutdownHookPlugin shutdownHookPlugin = new ShutdownHookPlugin();
+        shutdownHookPlugin.initialize("QUARTZ_SHUTDOWN_HOOK_PLUGIN", scheduler1, new SimpleClassLoadHelper());
+        shutdownHookPlugin.start();
+
+        // trigger log plugin
+        LoggingTriggerHistoryPlugin triggerLogPlugin = new LoggingTriggerHistoryPlugin();
+        triggerLogPlugin.initialize("QUARTZ_TRIGGER_LOG_PLUGIN", scheduler1, new SimpleClassLoadHelper());
+        triggerLogPlugin.start();
+
+        // job log plugin
+        LoggingJobHistoryPlugin jobLogPlugin = new LoggingJobHistoryPlugin();
+        jobLogPlugin.initialize("QUARTZ_JOB_LOG_PLUGIN", scheduler1, new CascadingClassLoadHelper());
+        jobLogPlugin.start();
 
 
         ListenerManager listenerManager = scheduler1.getListenerManager();
@@ -106,13 +127,14 @@ public class QuartzTest {
         scheduler1.start();
         _log.info("启动时间 ： " + new Date());
 
-        try {
-            Thread.sleep(6000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(5000);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
-        // scheduler1.shutdown();
+        //scheduler1.shutdown();
+        //System.exit(-1);
 
         // scheduler.deleteJob(jb.getKey()); // 删除job
 

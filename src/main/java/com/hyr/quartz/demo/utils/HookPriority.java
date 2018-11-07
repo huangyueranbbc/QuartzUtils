@@ -6,8 +6,12 @@ package com.hyr.quartz.demo.utils;
 public enum HookPriority {
 
     MIN_PRIORITY(1),
-    NORM_PRIORITY(5),
-    MAX_PRIORITY(10);
+    SCHEDULER_PRIORITY(20),
+    PLUGIN_PRIORITY(40),
+    NORM_PRIORITY(50),
+    JOB_PRIORITY(60),
+    MAX_PRIORITY(100);
+
 
     private int priority;
 

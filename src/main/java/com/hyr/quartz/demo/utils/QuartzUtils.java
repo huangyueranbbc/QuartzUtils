@@ -2,9 +2,16 @@ package com.hyr.quartz.demo.utils;
 
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.plugins.history.LoggingJobHistoryPlugin;
+import org.quartz.plugins.history.LoggingTriggerHistoryPlugin;
+import org.quartz.plugins.management.ShutdownHookPlugin;
+import org.quartz.simpl.CascadingClassLoadHelper;
+import org.quartz.simpl.SimpleClassLoadHelper;
+import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -35,13 +42,18 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(threadPriority)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", threadNamePrefix); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
+        props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
+
+
         StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
         addSchedulerFactoryHook(stdSchedulerFactory);
         return stdSchedulerFactory;
     }
 
     public static StdSchedulerFactory getStdSchedulerFactory(Properties props) throws SchedulerException {
-        return new StdSchedulerFactory(props);
+        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
+        addSchedulerFactoryHook(stdSchedulerFactory);
+        return stdSchedulerFactory;
     }
 
     public static StdSchedulerFactory getStdSchedulerFactory(String schedulerName) throws SchedulerException {
@@ -51,7 +63,10 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(Thread.NORM_PRIORITY)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
-        return new StdSchedulerFactory(props);
+        props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
+        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
+        addSchedulerFactoryHook(stdSchedulerFactory);
+        return stdSchedulerFactory;
     }
 
     /**
@@ -73,6 +88,34 @@ public class QuartzUtils {
         }
         if (triggerListener != null) {
             listenerManager.addTriggerListener(triggerListener);
+        }
+    }
+
+    /**
+     * 绑定多个监听器
+     *
+     * @param scheduler
+     * @param schedulerListeners
+     * @param jobListeners
+     * @param triggerListeners
+     * @throws SchedulerException
+     */
+    public static void bindSchedulerListenerManagers(Scheduler scheduler, Collection<SchedulerListener> schedulerListeners, Collection<JobListener> jobListeners, Collection<TriggerListener> triggerListeners) throws SchedulerException {
+        ListenerManager listenerManager = scheduler.getListenerManager();
+        if (schedulerListeners != null && !schedulerListeners.isEmpty()) {
+            for (SchedulerListener schedulerListener : schedulerListeners) {
+                listenerManager.addSchedulerListener(schedulerListener);
+            }
+        }
+        if (jobListeners != null && !jobListeners.isEmpty()) {
+            for (JobListener jobListener : jobListeners) {
+                listenerManager.addJobListener(jobListener);
+            }
+        }
+        if (triggerListeners != null && !triggerListeners.isEmpty()) {
+            for (TriggerListener triggerListener : triggerListeners) {
+                listenerManager.addTriggerListener(triggerListener);
+            }
         }
     }
 
@@ -306,6 +349,64 @@ public class QuartzUtils {
         scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
     }
 
+    /**
+     * 启动日志插件
+     *
+     * @param scheduler
+     */
+    public static void startLogPlugin(Scheduler scheduler) {
+        try {
+            String schedulerName = scheduler.getSchedulerName();
+            // trigger log plugin
+            LoggingTriggerHistoryPlugin triggerLogPlugin = new LoggingTriggerHistoryPlugin();
+            triggerLogPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
+            // job log plugin
+            LoggingJobHistoryPlugin jobLogPlugin = new LoggingJobHistoryPlugin();
+            jobLogPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
+
+            addPluginHook(triggerLogPlugin);
+            addPluginHook(jobLogPlugin);
+
+            triggerLogPlugin.start();
+            jobLogPlugin.start();
+        } catch (SchedulerException e) {
+            log.error("start log plugin error.");
+        }
+    }
+
+    /**
+     * 启动ShutDownHook插件
+     *
+     * @param scheduler
+     */
+    public static void startShutDownHookPlugin(Scheduler scheduler) {
+        try {
+            String schedulerName = scheduler.getSchedulerName();
+            ShutdownHookPlugin shutdownHookPlugin = new ShutdownHookPlugin();
+            shutdownHookPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
+            addPluginHook(shutdownHookPlugin);
+            shutdownHookPlugin.start();
+        } catch (SchedulerException e) {
+            log.error("start shutdown hook plugin error.");
+        }
+    }
+
+    /**
+     * plugin shutdownhook
+     *
+     * @param schedulerPlugin
+     */
+    private static void addPluginHook(final SchedulerPlugin schedulerPlugin) {
+        Thread schedulerShutdownHook = new Thread() {
+            @Override
+            public void run() {
+                schedulerPlugin.shutdown();
+                log.info("scheduler plugin shutdown success.");
+            }
+        };
+
+        shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.PLUGIN_PRIORITY.value());
+    }
 
     /**
      * Job ShutdownHook
@@ -320,14 +421,14 @@ public class QuartzUtils {
             public void run() {
                 try {
                     removeJob(scheduler, jobName, groupName);
-                    log.info("job shutdown.");
+                    log.info("job:{} shutdown success.", jobName);
                 } catch (SchedulerException e) {
                     log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName);
                 }
             }
         };
-        // 注该处的优先级要比Schedule的Hook优先级高
-        shutdownHookManager.addShutdownHook(quartzJobShutdownHook, HookPriority.NORM_PRIORITY.value());
+        // 注:该优先级要比Schedule的Hook优先级高
+        shutdownHookManager.addShutdownHook(quartzJobShutdownHook, HookPriority.JOB_PRIORITY.value());
     }
 
     /**
@@ -343,14 +444,15 @@ public class QuartzUtils {
                     for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
                         scheduler.shutdown(true); // true:等待job执行完毕
                     }
-                    log.info("scheduler shutdown.");
+                    log.info("scheduler shutdown success.");
                 } catch (SchedulerException e) {
                     log.error("shutdown scheduler error.");
                 }
             }
         };
 
-        // 注该处的优先级要比Job的Hook优先级低
-        shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.MIN_PRIORITY.value());
+        // 注:该优先级要比Job的Hook优先级低
+        shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.SCHEDULER_PRIORITY.value());
     }
+
 }

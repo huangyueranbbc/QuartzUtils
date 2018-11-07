@@ -8,6 +8,8 @@ Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priorit
 
 2.采用优先级的ShutDownHook进行Scheduler和Job的关闭。
 
+3.加入Quartz插件Plugin支持。LogPlugin和ShutdownHookPlugin.
+  
 
 
 
