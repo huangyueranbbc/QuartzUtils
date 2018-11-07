@@ -18,6 +18,8 @@ public class QuartzUtils {
 
     private static Logger log = LoggerFactory.getLogger(QuartzUtils.class);
 
+    private static ShutdownHookManager shutdownHookManager = ShutdownHookManager.get(); // shutdownhook
+
     /**
      * @param threadCount      线程数
      * @param threadPriority   线程优先级 5默认优先级
@@ -33,7 +35,9 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(threadPriority)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", threadNamePrefix); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
-        return new StdSchedulerFactory(props);
+        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
+        addSchedulerFactoryHook(stdSchedulerFactory);
+        return stdSchedulerFactory;
     }
 
     public static StdSchedulerFactory getStdSchedulerFactory(Properties props) throws SchedulerException {
@@ -142,7 +146,7 @@ public class QuartzUtils {
     public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName) {
         long intervalTime = timeUnit.toMillis(delay);
         try {
-            addHook(scheduler, jobName, groupName);
+            addJobHook(scheduler, jobName, groupName);
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetail(job, jobName, groupName);
             long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
@@ -172,7 +176,7 @@ public class QuartzUtils {
     public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName, JobDataMap dataMap) {
         long intervalTime = timeUnit.toMillis(delay);
         try {
-            addHook(scheduler, jobName, groupName);
+            addJobHook(scheduler, jobName, groupName);
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetailBindData(job, jobName, groupName, dataMap);
             long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
@@ -303,16 +307,50 @@ public class QuartzUtils {
     }
 
 
-    private static void addHook(final Scheduler scheduler, final String jobName, final String groupName) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+    /**
+     * Job ShutdownHook
+     *
+     * @param scheduler
+     * @param jobName
+     * @param groupName
+     */
+    private static void addJobHook(final Scheduler scheduler, final String jobName, final String groupName) {
+        Thread quartzJobShutdownHook = new Thread() {
             @Override
             public void run() {
                 try {
                     removeJob(scheduler, jobName, groupName);
+                    log.info("job shutdown.");
                 } catch (SchedulerException e) {
                     log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName);
                 }
             }
-        });
+        };
+        // 注该处的优先级要比Schedule的Hook优先级高
+        shutdownHookManager.addShutdownHook(quartzJobShutdownHook, HookPriority.NORM_PRIORITY.value());
+    }
+
+    /**
+     * Scheduler ShutdownHook
+     *
+     * @param stdSchedulerFactory
+     */
+    private static void addSchedulerFactoryHook(final StdSchedulerFactory stdSchedulerFactory) {
+        Thread schedulerShutdownHook = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
+                        scheduler.shutdown(true); // true:等待job执行完毕
+                    }
+                    log.info("scheduler shutdown.");
+                } catch (SchedulerException e) {
+                    log.error("shutdown scheduler error.");
+                }
+            }
+        };
+
+        // 注该处的优先级要比Job的Hook优先级低
+        shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.MIN_PRIORITY.value());
     }
 }

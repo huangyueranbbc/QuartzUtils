@@ -32,6 +32,14 @@ public class QuartzUtilsTest {
 
         // 注入属性
         QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 10, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP",dataMap);
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.exit(-1);
     }
 
 }
