@@ -48,7 +48,7 @@ public class ShutdownHookManager {
                             try {
                                 hook.run();
                             } catch (Throwable ex) {
-                                log.warn("ShutdownHook '" + hook.getClass().getSimpleName() + "' failed, " + ex.toString(), ex);
+                                log.error("ShutdownHook '" + hook.getClass().getSimpleName() + "' failed, " + ex.toString(), ex);
                             }
                         }
                     }
