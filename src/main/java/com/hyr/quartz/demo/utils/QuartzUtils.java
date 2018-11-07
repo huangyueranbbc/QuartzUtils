@@ -370,7 +370,7 @@ public class QuartzUtils {
             triggerLogPlugin.start();
             jobLogPlugin.start();
         } catch (SchedulerException e) {
-            log.error("start log plugin error.");
+            log.error("start log plugin error.",e);
         }
     }
 
@@ -387,7 +387,7 @@ public class QuartzUtils {
             addPluginHook(shutdownHookPlugin);
             shutdownHookPlugin.start();
         } catch (SchedulerException e) {
-            log.error("start shutdown hook plugin error.");
+            log.error("start shutdown hook plugin error.",e);
         }
     }
 
@@ -427,7 +427,7 @@ public class QuartzUtils {
                     }
                     log.info("job:{} shutdown success.", jobName);
                 } catch (SchedulerException e) {
-                    log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName);
+                    log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName,e);
                 }
             }
         };
@@ -453,7 +453,7 @@ public class QuartzUtils {
                     }
 
                 } catch (SchedulerException e) {
-                    log.error("shutdown scheduler error.");
+                    log.error("shutdown scheduler error.",e);
                 }
             }
         };
