@@ -1,5 +1,6 @@
 package com.hyr.quartz.demo;
 
+import com.hyr.quartz.demo.job.MyJob;
 import com.hyr.quartz.demo.listener.DefaultJobListener;
 import com.hyr.quartz.demo.listener.DefaultSchedulerListener;
 import com.hyr.quartz.demo.listener.DefaultTriggerListener;

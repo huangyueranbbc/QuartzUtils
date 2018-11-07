@@ -1,5 +1,6 @@
-package com.hyr.quartz.demo;
+package com.hyr.quartz.demo.job;
 
+import com.hyr.quartz.demo.service.JobService;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class MyJob implements Job {
         try {
             _log.info(jobKey + " Say hello to Quartz. " + jobDesc + "  " + new Date());
             long start = System.currentTimeMillis();
-            JobBusiness.instances.update();
+            JobService.instances.update();
             long end = System.currentTimeMillis();
             _log.info("UpdateJob cost time is " + (end - start));
             // Thread.sleep(10000); // 睡眠10秒，测试DisallowConcurrentExecution

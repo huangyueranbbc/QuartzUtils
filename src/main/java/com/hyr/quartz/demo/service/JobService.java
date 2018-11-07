@@ -1,9 +1,9 @@
-package com.hyr.quartz.demo;
+package com.hyr.quartz.demo.service;
 
 /*******************************************************************************
  * Description: 业务计算入口
  ******************************************************************************/
-public enum JobBusiness {
+public enum JobService {
     instances;
 
     public void update() {
