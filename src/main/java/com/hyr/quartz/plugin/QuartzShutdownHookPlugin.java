@@ -15,7 +15,7 @@
  *
  */
 
-package com.hyr.quartz.demo.plugin;
+package com.hyr.quartz.plugin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

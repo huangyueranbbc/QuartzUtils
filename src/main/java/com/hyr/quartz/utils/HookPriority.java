@@ -1,4 +1,4 @@
-package com.hyr.quartz.demo.utils;
+package com.hyr.quartz.utils;
 
 /**
  * shutdown hook priority

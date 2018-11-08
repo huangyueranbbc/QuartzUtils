@@ -1,4 +1,4 @@
-package com.hyr.quartz.demo.listener;
+package com.hyr.quartz.listener;
 
 import org.quartz.*;
 import org.slf4j.Logger;

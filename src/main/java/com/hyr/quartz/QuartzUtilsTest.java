@@ -1,10 +1,10 @@
-package com.hyr.quartz.demo;
+package com.hyr.quartz;
 
-import com.hyr.quartz.demo.job.MyJob;
-import com.hyr.quartz.demo.listener.DefaultJobListener;
-import com.hyr.quartz.demo.listener.DefaultSchedulerListener;
-import com.hyr.quartz.demo.listener.DefaultTriggerListener;
-import com.hyr.quartz.demo.utils.QuartzUtils;
+import com.hyr.quartz.job.MyJob;
+import com.hyr.quartz.listener.DefaultJobListener;
+import com.hyr.quartz.listener.DefaultSchedulerListener;
+import com.hyr.quartz.listener.DefaultTriggerListener;
+import com.hyr.quartz.utils.QuartzUtils;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -72,7 +72,7 @@ public class QuartzUtilsTest {
             e.printStackTrace();
         }
 
-        // System.exit(-1);
+        System.exit(0);
     }
 
 }

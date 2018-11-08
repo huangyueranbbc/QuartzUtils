@@ -1,4 +1,4 @@
-package com.hyr.quartz.demo.service;
+package com.hyr.quartz.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ public enum JobService {
 
     public void update() {
         System.out.println("the job is run......");
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 15; i++) {
             try {
                 log.info("the job is run.... times:{}", i);
                 Thread.sleep(1000);

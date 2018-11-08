@@ -15,7 +15,7 @@
  *
  */
 
-package com.hyr.quartz.demo.plugin;
+package com.hyr.quartz.plugin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,8 +272,6 @@ import java.text.MessageFormat;
  */
 public class QuartzLoggingJobHistoryPlugin implements SchedulerPlugin, JobListener {
 
-
-    // DEBUG INFO ERROR TRACE WARN
     @SuppressWarnings("WeakerAccess")
     public final static int LOG_TRACE = 0;
 
@@ -281,13 +279,13 @@ public class QuartzLoggingJobHistoryPlugin implements SchedulerPlugin, JobListen
     public final static int LOG_DEBUG = 10;
 
     @SuppressWarnings("WeakerAccess")
-    public final static int LOG_INFO = 30;
+    public final static int LOG_INFO = 20;
 
     @SuppressWarnings("WeakerAccess")
-    public final static int LOG_WARN = 40;
+    public final static int LOG_WARN = 30;
 
     @SuppressWarnings("WeakerAccess")
-    public final static int LOG_ERROR = 50;
+    public final static int LOG_ERROR = 40;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

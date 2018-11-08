@@ -2,7 +2,7 @@
 
 学习整理quartz一些常用配置和组件。
 
-Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priority、Durably、Recovery、DisallowConcurrentExecution、PersistJobDataAfterExecution、ThreadPool、usingJobData
+Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priority、Durably、Recovery、DisallowConcurrentExecution、PersistJobDataAfterExecution、ThreadPool、usingJobData、Quartz Plugin、ShutdownHook。
 
 1.增加QuartzUtils工具类
 

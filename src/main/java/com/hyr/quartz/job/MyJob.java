@@ -1,6 +1,6 @@
-package com.hyr.quartz.demo.job;
+package com.hyr.quartz.job;
 
-import com.hyr.quartz.demo.service.JobService;
+import com.hyr.quartz.service.JobService;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

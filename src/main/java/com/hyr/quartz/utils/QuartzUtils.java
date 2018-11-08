@@ -1,11 +1,10 @@
-package com.hyr.quartz.demo.utils;
+package com.hyr.quartz.utils;
 
-import com.hyr.quartz.demo.plugin.QuartzLoggingJobHistoryPlugin;
-import com.hyr.quartz.demo.plugin.QuartzLoggingTriggerHistoryPlugin;
-import com.hyr.quartz.demo.plugin.QuartzShutdownHookPlugin;
+import com.hyr.quartz.plugin.QuartzLoggingJobHistoryPlugin;
+import com.hyr.quartz.plugin.QuartzLoggingTriggerHistoryPlugin;
+import com.hyr.quartz.plugin.QuartzShutdownHookPlugin;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.plugins.management.ShutdownHookPlugin;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
@@ -35,13 +34,13 @@ public class QuartzUtils {
     public final static int LOG_DEBUG = 10;
 
     @SuppressWarnings("WeakerAccess")
-    public final static int LOG_INFO = 30;
+    public final static int LOG_INFO = 20;
 
     @SuppressWarnings("WeakerAccess")
-    public final static int LOG_WARN = 40;
+    public final static int LOG_WARN = 30;
 
     @SuppressWarnings("WeakerAccess")
-    public final static int LOG_ERROR = 50;
+    public final static int LOG_ERROR = 40;
 
     /**
      * @param threadCount      线程数
