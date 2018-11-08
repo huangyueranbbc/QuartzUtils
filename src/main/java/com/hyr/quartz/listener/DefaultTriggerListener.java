@@ -6,9 +6,6 @@ import org.quartz.TriggerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /*******************************************************************************
  * @date 2018-11-11 下午 11:11
  * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
@@ -17,8 +14,6 @@ import java.util.Map;
 public class DefaultTriggerListener implements TriggerListener {
 
     private static Logger log = LoggerFactory.getLogger(DefaultTriggerListener.class);
-
-    private static Map<String, Long> jobStatus = new HashMap<>();
 
     private String name; // 监听器名称
 
@@ -82,13 +77,8 @@ public class DefaultTriggerListener implements TriggerListener {
      */
     @Override
     public void triggerComplete(Trigger trigger, JobExecutionContext jobExecutionContext, Trigger.CompletedExecutionInstruction completedExecutionInstruction) {
-        // FIXME 测试执行次数 是否正常。 生产环境删除
         String triggerName = trigger.getKey().getName();
-        String jobName = jobExecutionContext.getJobDetail().getKey().getName();
-        if (!jobStatus.containsKey(jobName)) {
-            jobStatus.put(jobName, 0L);
-        }
-        jobStatus.put(jobName, jobStatus.get(jobName) + 1); // 执行一次
-        log.info(getName() + " - the job:{} is exec complete. count:{} ,triggerName:{}", jobName, jobStatus.get(jobName), triggerName);
+        String jobName = trigger.getJobKey().getName();
+        log.info(getName() + " - the trigger is trigger complete. jobName:{} ,triggerName:{}", jobName, triggerName);
     }
 }

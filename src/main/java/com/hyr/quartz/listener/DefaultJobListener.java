@@ -6,6 +6,8 @@ import org.quartz.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /*******************************************************************************
  * @date 2018-11-11 下午 11:11
  * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
@@ -16,6 +18,8 @@ public class DefaultJobListener implements JobListener {
     private static Logger log = LoggerFactory.getLogger(DefaultJobListener.class);
 
     private String name; // 监听器名称
+
+    private static ConcurrentHashMap<String, Long> jobStatus = new ConcurrentHashMap<>();
 
     @Override
     public String getName() {
@@ -33,8 +37,15 @@ public class DefaultJobListener implements JobListener {
      */
     @Override
     public void jobToBeExecuted(JobExecutionContext jobExecutionContext) {
+        // FIXME 测试执行次数 是否正常。 生产环境删除
         String jobName = jobExecutionContext.getJobDetail().getKey().getName();
-        log.info(getName() + " - the job:{} is will to exec.", jobName);
+        String triggerName = jobExecutionContext.getTrigger().getKey().getName();
+        if (!jobStatus.containsKey(jobName)) {
+            jobStatus.put(jobName, 0L);
+        }
+        Long jobCount = jobStatus.get(jobName);
+        jobStatus.put(jobName, jobCount + 1); // 执行一次
+        log.info(getName() + " - the job:{} is will to exec. count:{} ,triggerName:{}", jobName, jobCount, triggerName);
     }
 
     /**
