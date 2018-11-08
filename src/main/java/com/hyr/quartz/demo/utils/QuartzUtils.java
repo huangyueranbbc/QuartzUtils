@@ -42,17 +42,11 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadNamePrefix", threadNamePrefix); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
         props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
-
-
-        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
-        addSchedulerFactoryHook(stdSchedulerFactory);
-        return stdSchedulerFactory;
+        return new StdSchedulerFactory(props);
     }
 
     public static StdSchedulerFactory getStdSchedulerFactory(Properties props) throws SchedulerException {
-        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
-        addSchedulerFactoryHook(stdSchedulerFactory);
-        return stdSchedulerFactory;
+        return new StdSchedulerFactory(props);
     }
 
     public static StdSchedulerFactory getStdSchedulerFactory(String schedulerName) throws SchedulerException {
@@ -63,9 +57,7 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
         props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
-        StdSchedulerFactory stdSchedulerFactory = new StdSchedulerFactory(props);
-        addSchedulerFactoryHook(stdSchedulerFactory);
-        return stdSchedulerFactory;
+        return new StdSchedulerFactory(props);
     }
 
     /**
@@ -188,7 +180,7 @@ public class QuartzUtils {
     public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName) {
         long intervalTime = timeUnit.toMillis(delay);
         try {
-            addJobHook(scheduler, jobName, groupName);
+            addJobShutdownHook(scheduler, jobName, groupName);
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetail(job, jobName, groupName);
             long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
@@ -218,7 +210,7 @@ public class QuartzUtils {
     public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName, JobDataMap dataMap) {
         long intervalTime = timeUnit.toMillis(delay);
         try {
-            addJobHook(scheduler, jobName, groupName);
+            addJobShutdownHook(scheduler, jobName, groupName);
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetailBindData(job, jobName, groupName, dataMap);
             long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
@@ -363,8 +355,8 @@ public class QuartzUtils {
             LoggingJobHistoryPlugin jobLogPlugin = new LoggingJobHistoryPlugin();
             jobLogPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
 
-            addPluginHook(triggerLogPlugin);
-            addPluginHook(jobLogPlugin);
+            addPluginShutdownHook(triggerLogPlugin);
+            addPluginShutdownHook(jobLogPlugin);
 
             triggerLogPlugin.start();
             jobLogPlugin.start();
@@ -383,9 +375,9 @@ public class QuartzUtils {
             String schedulerName = scheduler.getSchedulerName();
             ShutdownHookPlugin shutdownHookPlugin = new ShutdownHookPlugin();
             shutdownHookPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
-            addPluginHook(shutdownHookPlugin);
+            addPluginShutdownHook(shutdownHookPlugin);
             shutdownHookPlugin.start();
-        } catch (SchedulerException e) {
+        } catch (Exception e) {
             log.error("start shutdown hook plugin error.", e);
         }
     }
@@ -395,12 +387,13 @@ public class QuartzUtils {
      *
      * @param schedulerPlugin
      */
-    private static void addPluginHook(final SchedulerPlugin schedulerPlugin) {
+    public static void addPluginShutdownHook(final SchedulerPlugin schedulerPlugin) {
         Thread schedulerShutdownHook = new Thread() {
             @Override
             public void run() {
-                assert schedulerPlugin != null;
-                schedulerPlugin.shutdown();
+                if (schedulerPlugin != null) {
+                    schedulerPlugin.shutdown();
+                }
                 log.info("scheduler plugin shutdown success.");
             }
         };
@@ -414,15 +407,16 @@ public class QuartzUtils {
      * @param jobName
      * @param groupName
      */
-    private static void addJobHook(final Scheduler scheduler, final String jobName, final String groupName) {
+    public static void addJobShutdownHook(final Scheduler scheduler, final String jobName, final String groupName) {
         Thread quartzJobShutdownHook = new Thread() {
             @Override
             public void run() {
                 try {
-                    assert scheduler != null;
-                    removeJob(scheduler, jobName, groupName);
+                    if (scheduler != null) {
+                        removeJob(scheduler, jobName, groupName);
+                    }
                     log.info("job:{} shutdown success.", jobName);
-                } catch (SchedulerException e) {
+                } catch (Exception e) {
                     log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName, e);
                 }
             }
@@ -433,20 +427,18 @@ public class QuartzUtils {
 
     /**
      * Scheduler ShutdownHook
-     *
-     * @param stdSchedulerFactory
+     * 避免和Quartz自带ShutdownPlugin插件同时使用
+     * @param scheduler
      */
-    private static void addSchedulerFactoryHook(final StdSchedulerFactory stdSchedulerFactory) {
+    public static void addSchedulerShutdownHook(final Scheduler scheduler) {
         Thread schedulerShutdownHook = new Thread() {
             @Override
             public void run() {
                 try {
-                    assert stdSchedulerFactory != null && stdSchedulerFactory.getAllSchedulers() != null;
-                    for (Scheduler scheduler : stdSchedulerFactory.getAllSchedulers()) {
-                        scheduler.shutdown(true); // true:等待job执行完毕
-                        log.info("scheduler shutdown success. scheduler:{}", scheduler.getSchedulerName());
-                    }
-                } catch (SchedulerException e) {
+                    String schedulerName = scheduler.getSchedulerName();
+                    scheduler.shutdown();
+                    log.info("scheduler shutdown success. scheduler:{}", schedulerName);
+                } catch (Exception e) {
                     log.error("shutdown scheduler error.", e);
                 }
             }

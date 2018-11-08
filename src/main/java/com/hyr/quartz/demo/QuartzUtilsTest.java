@@ -20,14 +20,22 @@ import java.util.concurrent.TimeUnit;
 public class QuartzUtilsTest {
 
     public static void main(String[] args) throws SchedulerException {
-        StdSchedulerFactory schedulerFactory = QuartzUtils.getStdSchedulerFactory(10, Thread.NORM_PRIORITY, "UPLOAD_JOB", "UPLOAD_JOB");
-        Scheduler scheduler = schedulerFactory.getScheduler();
+        StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(10, Thread.NORM_PRIORITY, "UPLOAD_JOB1", "UPLOAD_JOB1");
+        Scheduler scheduler = schedulerFactory1.getScheduler();
+
+        StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(10, Thread.NORM_PRIORITY, "UPLOAD_JOB2", "UPLOAD_JOB2");
+        Scheduler scheduler2 = schedulerFactory2.getScheduler();
 
         QuartzUtils.startLogPlugin(scheduler); // 启动日志插件
         QuartzUtils.startShutDownHookPlugin(scheduler); // 启动ShutDownHook插件
 
+
+        QuartzUtils.startLogPlugin(scheduler2); // 启动日志插件
+        QuartzUtils.startShutDownHookPlugin(scheduler2); // 启动ShutDownHook插件
+
         // 绑定单个Listener监听器
         QuartzUtils.bindSchedulerListenerManager(scheduler, new DefaultSchedulerListener("DefaultSchedulerListener"), new DefaultJobListener("DefaultJobListener"), new DefaultTriggerListener("DefaultTriggerListener"));
+        QuartzUtils.bindSchedulerListenerManager(scheduler2, new DefaultSchedulerListener("DefaultSchedulerListener"), new DefaultJobListener("DefaultJobListener"), new DefaultTriggerListener("DefaultTriggerListener"));
 
         // 绑定多个Listener监听器
         List<SchedulerListener> schedulerListeners = new ArrayList<>();
@@ -53,10 +61,10 @@ public class QuartzUtilsTest {
         QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 5, TimeUnit.SECONDS, -1, "ProducerJob", "QUARTZ-JOB-GROUP");
 
         // 注入属性
-        QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 10, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP", dataMap);
+        QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 10, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP", dataMap);
 
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
