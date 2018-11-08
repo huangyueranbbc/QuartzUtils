@@ -1,9 +1,10 @@
 package com.hyr.quartz.demo.utils;
 
+import com.hyr.quartz.demo.plugin.QuartzLoggingJobHistoryPlugin;
+import com.hyr.quartz.demo.plugin.QuartzLoggingTriggerHistoryPlugin;
+import com.hyr.quartz.demo.plugin.QuartzShutdownHookPlugin;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.plugins.history.LoggingJobHistoryPlugin;
-import org.quartz.plugins.history.LoggingTriggerHistoryPlugin;
 import org.quartz.plugins.management.ShutdownHookPlugin;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
@@ -25,6 +26,22 @@ public class QuartzUtils {
     private static Logger log = LoggerFactory.getLogger(QuartzUtils.class);
 
     private static ShutdownHookManager shutdownHookManager = ShutdownHookManager.get(); // shutdownhook
+
+    // QuartzLoggingPlugin 日志级别
+    @SuppressWarnings("WeakerAccess")
+    public final static int LOG_TRACE = 0;
+
+    @SuppressWarnings("WeakerAccess")
+    public final static int LOG_DEBUG = 10;
+
+    @SuppressWarnings("WeakerAccess")
+    public final static int LOG_INFO = 30;
+
+    @SuppressWarnings("WeakerAccess")
+    public final static int LOG_WARN = 40;
+
+    @SuppressWarnings("WeakerAccess")
+    public final static int LOG_ERROR = 50;
 
     /**
      * @param threadCount      线程数
@@ -344,16 +361,19 @@ public class QuartzUtils {
      * 启动日志插件
      *
      * @param scheduler
+     * @param log_level 日志统一打印级别
      */
-    public static void startLogPlugin(Scheduler scheduler) {
+    public static void startLogPlugin(Scheduler scheduler, int log_level) {
         try {
             String schedulerName = scheduler.getSchedulerName();
             // trigger log plugin
-            LoggingTriggerHistoryPlugin triggerLogPlugin = new LoggingTriggerHistoryPlugin();
+            QuartzLoggingTriggerHistoryPlugin triggerLogPlugin = new QuartzLoggingTriggerHistoryPlugin();
             triggerLogPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
+            triggerLogPlugin.setLog_level(log_level);
             // job log plugin
-            LoggingJobHistoryPlugin jobLogPlugin = new LoggingJobHistoryPlugin();
+            QuartzLoggingJobHistoryPlugin jobLogPlugin = new QuartzLoggingJobHistoryPlugin();
             jobLogPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
+            jobLogPlugin.setLog_level(log_level);
 
             addPluginShutdownHook(triggerLogPlugin);
             addPluginShutdownHook(jobLogPlugin);
@@ -373,7 +393,7 @@ public class QuartzUtils {
     public static void startShutDownHookPlugin(Scheduler scheduler) {
         try {
             String schedulerName = scheduler.getSchedulerName();
-            ShutdownHookPlugin shutdownHookPlugin = new ShutdownHookPlugin();
+            QuartzShutdownHookPlugin shutdownHookPlugin = new QuartzShutdownHookPlugin();
             shutdownHookPlugin.initialize(schedulerName, scheduler, new SimpleClassLoadHelper());
             addPluginShutdownHook(shutdownHookPlugin);
             shutdownHookPlugin.start();
@@ -428,6 +448,7 @@ public class QuartzUtils {
     /**
      * Scheduler ShutdownHook
      * 避免和Quartz自带ShutdownPlugin插件同时使用
+     *
      * @param scheduler
      */
     public static void addSchedulerShutdownHook(final Scheduler scheduler) {

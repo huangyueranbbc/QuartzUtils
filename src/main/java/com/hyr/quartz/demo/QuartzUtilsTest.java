@@ -4,6 +4,7 @@ import com.hyr.quartz.demo.job.MyJob;
 import com.hyr.quartz.demo.listener.DefaultJobListener;
 import com.hyr.quartz.demo.listener.DefaultSchedulerListener;
 import com.hyr.quartz.demo.listener.DefaultTriggerListener;
+import com.hyr.quartz.demo.plugin.QuartzLoggingJobHistoryPlugin;
 import com.hyr.quartz.demo.utils.QuartzUtils;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -26,11 +27,14 @@ public class QuartzUtilsTest {
         StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(10, Thread.NORM_PRIORITY, "UPLOAD_JOB2", "UPLOAD_JOB2");
         Scheduler scheduler2 = schedulerFactory2.getScheduler();
 
-        QuartzUtils.startLogPlugin(scheduler); // 启动日志插件
+        QuartzUtils.addSchedulerShutdownHook(scheduler);
+        QuartzUtils.addSchedulerShutdownHook(scheduler2);
+
+        QuartzUtils.startLogPlugin(scheduler, QuartzUtils.LOG_ERROR); // 启动日志插件
         QuartzUtils.startShutDownHookPlugin(scheduler); // 启动ShutDownHook插件
 
 
-        QuartzUtils.startLogPlugin(scheduler2); // 启动日志插件
+        QuartzUtils.startLogPlugin(scheduler2, QuartzUtils.LOG_ERROR); // 启动日志插件
         QuartzUtils.startShutDownHookPlugin(scheduler2); // 启动ShutDownHook插件
 
         // 绑定单个Listener监听器
@@ -69,7 +73,7 @@ public class QuartzUtilsTest {
             e.printStackTrace();
         }
 
-        System.exit(-1);
+        // System.exit(-1);
     }
 
 }
