@@ -4,7 +4,6 @@ import com.hyr.quartz.demo.job.MyJob;
 import com.hyr.quartz.demo.listener.DefaultJobListener;
 import com.hyr.quartz.demo.listener.DefaultSchedulerListener;
 import com.hyr.quartz.demo.listener.DefaultTriggerListener;
-import com.hyr.quartz.demo.plugin.QuartzLoggingJobHistoryPlugin;
 import com.hyr.quartz.demo.utils.QuartzUtils;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;

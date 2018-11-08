@@ -489,14 +489,19 @@ public class QuartzLoggingTriggerHistoryPlugin implements SchedulerPlugin,
         switch (log_level) {
             case LOG_TRACE:
                 getLog().trace(message);
+                break;
             case LOG_DEBUG:
                 getLog().debug(message);
+                break;
             case LOG_INFO:
                 getLog().info(message);
+                break;
             case LOG_WARN:
                 getLog().warn(message);
+                break;
             case LOG_ERROR:
                 getLog().error(message);
+                break;
         }
     }
 
