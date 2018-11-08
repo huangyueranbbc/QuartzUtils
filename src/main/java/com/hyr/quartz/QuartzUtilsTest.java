@@ -29,11 +29,11 @@ public class QuartzUtilsTest {
         QuartzUtils.addSchedulerShutdownHook(scheduler);
         QuartzUtils.addSchedulerShutdownHook(scheduler2);
 
-        //QuartzUtils.startLogPlugin(scheduler, QuartzUtils.LOG_INFO); // 启动日志插件
+        QuartzUtils.startLogPlugin(scheduler, QuartzUtils.LOG_INFO); // 启动日志插件
         QuartzUtils.startShutDownHookPlugin(scheduler); // 启动ShutDownHook插件
 
 
-        //QuartzUtils.startLogPlugin(scheduler2, QuartzUtils.LOG_DEBUG); // 启动日志插件
+        QuartzUtils.startLogPlugin(scheduler2, QuartzUtils.LOG_DEBUG); // 启动日志插件
         QuartzUtils.startShutDownHookPlugin(scheduler2); // 启动ShutDownHook插件
 
         // 绑定单个Listener监听器
