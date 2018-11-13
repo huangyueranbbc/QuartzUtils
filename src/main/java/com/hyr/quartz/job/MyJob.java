@@ -9,7 +9,7 @@ import java.util.Date;
 
 @DisallowConcurrentExecution // 不允许并发执行多个Job实例。 当前Job执行完毕后，才会执行下一个。一进一出。
 @PersistJobDataAfterExecution // 每次执行JOB后，更新Job内容
-public class MyJob implements Job {
+public class MyJob extends QuartzJob {
 
     //    private static Logger _log = Logger.getLogger(MyJob.class);
     private static Logger _log = LoggerFactory.getLogger(MyJob.class);
@@ -35,19 +35,10 @@ public class MyJob implements Job {
             long end = System.currentTimeMillis();
             _log.info("UpdateJob cost time is " + (end - start));
             // Thread.sleep(10000); // 睡眠10秒，测试DisallowConcurrentExecution
-            // throw new Exception(); // 抛出测试异常
+            throw new Exception(); // 抛出测试异常
         } catch (Exception e) {
             _log.error(jobKey + " execute has error.", e);
-            // 通过JobExecutionException异常,通知scheduler如何处理
-            JobExecutionException jee =
-                    new JobExecutionException(e);
-            // this job will refire immediately
-            jee.setRefireImmediately(true); // 立即重新执行任务
-            // Quartz will automatically unschedule
-            // all triggers associated with this job
-            // so that it does not run again
-            // jee.setUnscheduleAllTriggers(true); // 立即停止所有相关这个任务的触发器
-            throw jee;
+            retryExecJob(e,jobExecutionContext);
         }
     }
 
