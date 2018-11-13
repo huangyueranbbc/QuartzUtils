@@ -67,7 +67,7 @@ public class QuartzUtilsTest {
         QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 10, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP", dataMap);
 
         try {
-            Thread.sleep(30000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

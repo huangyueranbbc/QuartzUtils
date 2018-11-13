@@ -411,9 +411,11 @@ public class QuartzUtils {
             @Override
             public void run() {
                 if (schedulerPlugin != null) {
-                    schedulerPlugin.shutdown();
+                    synchronized (schedulerPlugin) {
+                        schedulerPlugin.shutdown();
+                        log.info("scheduler plugin shutdown success.");
+                    }
                 }
-                log.info("scheduler plugin shutdown success.");
             }
         };
         shutdownHookManager.addShutdownHook(schedulerShutdownHook, HookPriority.PLUGIN_PRIORITY.value());
@@ -432,9 +434,11 @@ public class QuartzUtils {
             public void run() {
                 try {
                     if (scheduler != null) {
-                        removeJob(scheduler, jobName, groupName);
+                        synchronized (scheduler) {
+                            removeJob(scheduler, jobName, groupName);
+                            log.info("job:{} remove success.", jobName);
+                        }
                     }
-                    log.info("job:{} shutdown success.", jobName);
                 } catch (Exception e) {
                     log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName, e);
                 }
@@ -455,9 +459,13 @@ public class QuartzUtils {
             @Override
             public void run() {
                 try {
-                    String schedulerName = scheduler.getSchedulerName();
-                    scheduler.shutdown();
-                    log.info("scheduler shutdown success. scheduler:{}", schedulerName);
+                    if (scheduler != null) {
+                        synchronized (scheduler) {
+                            String schedulerName = scheduler.getSchedulerName();
+                            scheduler.shutdown();
+                            log.info("scheduler shutdown success. scheduler:{}", schedulerName);
+                        }
+                    }
                 } catch (Exception e) {
                     log.error("shutdown scheduler error.", e);
                 }
