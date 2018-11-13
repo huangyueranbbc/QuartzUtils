@@ -68,7 +68,7 @@ public class QuartzUtils {
     public static StdSchedulerFactory getStdSchedulerFactory(String schedulerName) throws SchedulerException {
         Properties props = new Properties();
         props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-        props.setProperty("org.quartz.threadPool.threadCount", "4"); // 线程数
+        props.setProperty("org.quartz.threadPool.threadCount", "1"); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(Thread.NORM_PRIORITY)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
