@@ -16,7 +16,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /*******************************************************************************
- * @date 2018-11-11 下午 11:11
+ * @date 2018-11-13 下午 5:53
  * @author: <a href=mailto:huangyr>黄跃然</a>
  * @Description: Quartz工具类
  ******************************************************************************/
@@ -132,7 +132,7 @@ public class QuartzUtils {
      * @param scheduler    调度器
      * @param job          JobClass
      * @param initialDelay 首次延时启动时间
-     * @param timeUnit     延时启动时间单位
+     * @param timeUnit     时间单位
      * @param timer        cron表达式
      * @param jobName      任务名称
      * @param groupName    组名
@@ -160,7 +160,7 @@ public class QuartzUtils {
      * @param scheduler    调度器
      * @param job          JobClass
      * @param initialDelay 首次延时启动时间
-     * @param timeUnit     延时启动时间单位
+     * @param timeUnit     时间单位
      * @param timer        cron表达式
      * @param jobName      任务名称
      * @param groupName    组名
@@ -187,7 +187,7 @@ public class QuartzUtils {
      * @param scheduler    调度器
      * @param job          JobClass
      * @param initialDelay 首次延时启动时间
-     * @param timeUnit     延时启动时间单位
+     * @param timeUnit     时间单位
      * @param delay        间隔时间
      * @param repeatCount  重复执行次数 -1无限次数 0不执行
      * @param jobName      任务名称
@@ -216,7 +216,7 @@ public class QuartzUtils {
      * @param scheduler    调度器
      * @param job          JobClass
      * @param initialDelay 首次延时启动时间
-     * @param timeUnit     延时启动时间单位
+     * @param timeUnit     时间单位
      * @param delay        间隔时间
      * @param repeatCount  重复执行次数 -1无限次数 0不执行
      * @param jobName      任务名称
@@ -434,7 +434,9 @@ public class QuartzUtils {
                 try {
                     if (scheduler != null) {
                         synchronized (scheduler) {
-                            removeJob(scheduler, jobName, groupName);
+                            if (!scheduler.isShutdown()) {
+                                removeJob(scheduler, jobName, groupName);
+                            }
                             log.info("job:{} remove success.", jobName);
                         }
                     }
@@ -461,7 +463,9 @@ public class QuartzUtils {
                     if (scheduler != null) {
                         synchronized (scheduler) {
                             String schedulerName = scheduler.getSchedulerName();
-                            scheduler.shutdown();
+                            if (!scheduler.isShutdown()) {
+                                scheduler.shutdown(true);
+                            }
                             log.info("scheduler shutdown success. scheduler:{}", schedulerName);
                         }
                     }
