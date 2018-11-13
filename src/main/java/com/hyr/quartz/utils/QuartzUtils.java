@@ -324,7 +324,6 @@ public class QuartzUtils {
                 .storeDurably(true) // 如果一个job是非持久的，当没有活跃的trigger与之关联的时候，会被自动地从scheduler中删除
                 .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
                 .withIdentity(jobName, groupName) //job 的name和group
-                //.usingJobData("jobDesc", "job_01") // 属性注入
                 .build();
     }
 
