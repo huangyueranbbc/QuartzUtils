@@ -35,7 +35,7 @@ public class MyJob extends QuartzJob {
             long end = System.currentTimeMillis();
             _log.info("UpdateJob cost time is " + (end - start));
             // Thread.sleep(10000); // 睡眠10秒，测试DisallowConcurrentExecution
-            throw new Exception(); // 抛出测试异常
+            //throw new Exception(); // 抛出测试异常
         } catch (Exception e) {
             _log.error(jobKey + " execute has error.", e);
             retryExecJob(e,jobExecutionContext);

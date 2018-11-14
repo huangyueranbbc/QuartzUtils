@@ -61,10 +61,10 @@ public class QuartzUtilsTest {
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("jobDesc", "job desc.");
 
-        QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 10, TimeUnit.SECONDS, -1, "ProducerJob", "QUARTZ-JOB-GROUP");
+        QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 30, TimeUnit.SECONDS, -1, "ProducerJob", "QUARTZ-JOB-GROUP");
 
         // 注入属性
-        QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 10, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP", dataMap);
+        //QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP", dataMap);
 
         try {
             Thread.sleep(5000);
@@ -72,7 +72,7 @@ public class QuartzUtilsTest {
             e.printStackTrace();
         }
 
-        //System.exit(0);
+        System.exit(0);
     }
 
 }

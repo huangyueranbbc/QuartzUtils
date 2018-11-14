@@ -17,20 +17,23 @@
 
 package com.hyr.quartz.plugin;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.hyr.quartz.utils.HookPriority;
+import com.hyr.quartz.utils.ShutdownHookManager;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * This plugin catches the event of the JVM terminating (such as upon a CRTL-C)
- * and tells the scheuler to shutdown.
+/*******************************************************************************
+ * 版权信息：博睿宏远科技发展有限公司
+ * Copyright: Copyright (c) 2007博睿宏远科技发展有限公司,Inc.All Rights Reserved.
  *
- * @Description: 对Quartz默认插件的扩充
- * @see org.quartz.Scheduler#shutdown(boolean)
- */
+ * @date 2018-11-11 下午 11:11
+ * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
+ * @Description: Quartz ShutdownHook插件
+ ******************************************************************************/
 public class QuartzShutdownHookPlugin implements SchedulerPlugin {
 
     /*
@@ -72,7 +75,7 @@ public class QuartzShutdownHookPlugin implements SchedulerPlugin {
      * The default value is <code>true</code>.
      * </p>
      *
-     * @see org.quartz.Scheduler#shutdown(boolean)
+     * @see Scheduler#shutdown(boolean)
      */
     public boolean isCleanShutdown() {
         return cleanShutdown;
@@ -86,7 +89,7 @@ public class QuartzShutdownHookPlugin implements SchedulerPlugin {
      * The default value is <code>true</code>.
      * </p>
      *
-     * @see org.quartz.Scheduler#shutdown(boolean)
+     * @see Scheduler#shutdown(boolean)
      */
     public void setCleanShutdown(boolean b) {
         cleanShutdown = b;
@@ -123,7 +126,11 @@ public class QuartzShutdownHookPlugin implements SchedulerPlugin {
             public void run() {
                 getLog().info("Shutting down Quartz...");
                 try {
-                    scheduler.shutdown(isCleanShutdown());
+                    synchronized (scheduler){
+                        if (!scheduler.isShutdown()) {
+                            scheduler.shutdown(isCleanShutdown());
+                        }
+                    }
                 } catch (SchedulerException e) {
                     getLog().error(
                             "Error shutting down Quartz: " + e.getMessage(), e);
@@ -131,7 +138,7 @@ public class QuartzShutdownHookPlugin implements SchedulerPlugin {
             }
         };
 
-        Runtime.getRuntime().addShutdownHook(t);
+        ShutdownHookManager.get().addShutdownHook(t, HookPriority.SCHEDULER_PRIORITY.value());
     }
 
     public void start() {
