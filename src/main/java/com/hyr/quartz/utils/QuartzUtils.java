@@ -412,7 +412,7 @@ public class QuartzUtils {
                 if (schedulerPlugin != null) {
                     synchronized (schedulerPlugin) {
                         schedulerPlugin.shutdown();
-                        log.info("scheduler plugin shutdown success.");
+                        log.info("scheduler plugin:{} shutdown success.", schedulerPlugin.getClass().getSimpleName());
                     }
                 }
             }
