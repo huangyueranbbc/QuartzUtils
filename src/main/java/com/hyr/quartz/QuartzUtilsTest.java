@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit;
 public class QuartzUtilsTest {
 
     public static void main(String[] args) throws SchedulerException {
-        StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(10, Thread.NORM_PRIORITY, "UPLOAD_JOB1", "UPLOAD_JOB1");
+        StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB1", "UPLOAD_JOB1");
         Scheduler scheduler = schedulerFactory1.getScheduler();
 
-        StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(10, Thread.NORM_PRIORITY, "UPLOAD_JOB2", "UPLOAD_JOB2");
+        StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB2", "UPLOAD_JOB2");
         Scheduler scheduler2 = schedulerFactory2.getScheduler();
 
         QuartzUtils.addSchedulerShutdownHook(scheduler);
@@ -61,10 +61,10 @@ public class QuartzUtilsTest {
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("jobDesc", "job desc.");
 
-        QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 30, TimeUnit.SECONDS, -1, "ProducerJob", "QUARTZ-JOB-GROUP");
+        QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", "QUARTZ-JOB-GROUP");
 
         // 注入属性
-        //QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJobData", "QUARTZ-JOB-GROUP", dataMap);
+        //QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 2, TimeUnit.SECONDS, -1, "ProducerJobData1", "QUARTZ-JOB-GROUP", dataMap);
 
         try {
             Thread.sleep(5000);
@@ -72,7 +72,7 @@ public class QuartzUtilsTest {
             e.printStackTrace();
         }
 
-        System.exit(0);
+        //System.exit(0);
     }
 
 }

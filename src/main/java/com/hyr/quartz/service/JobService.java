@@ -15,7 +15,7 @@ public enum JobService {
 
     public void update() {
         System.out.println("the job is run......");
-        int runTime = new Random().nextInt(50);
+        int runTime = new Random().nextInt(5);
         log.info("runTime:{}", runTime);
         for (int i = 1; i <= runTime; i++) {
             try {

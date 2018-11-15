@@ -1,5 +1,6 @@
 package com.hyr.quartz.listener;
 
+import com.hyr.quartz.utils.MxBeanManager;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
@@ -70,6 +71,11 @@ public class DefaultJobListener implements JobListener {
     public void jobWasExecuted(JobExecutionContext jobExecutionContext, JobExecutionException e) {
         String jobName = jobExecutionContext.getJobDetail().getKey().getName();
         log.info(getName() + " - the job:{} is exec success.", jobName);
+        MxBeanManager.setLog_level(MxBeanManager.LOG_INFO);
+        MxBeanManager.loggingMemoryHistoryDebugInfo(); // 打印内存使用信息
+        MxBeanManager.loggingThreadHistoryDebugInfo();
     }
+
+
 
 }
