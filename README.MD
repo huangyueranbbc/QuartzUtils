@@ -1,4 +1,4 @@
-# QuartzUtils [![Travis](https://img.shields.io/badge/Utils-Quartz-blue.svg)](https://github.com/huangyueranbbc/QuartzUtils/)    
+# QuartzUtils [![Travis](https://img.shields.io/badge/Utils-Quartz-blue.svg)](https://github.com/huangyueranbbc/QuartzUtils/)  [![Travis](https://img.shields.io/badge/API-Quartz-orange.svg)](http://www.quartz-scheduler.org/)      
 
 学习整理quartz一些常用配置和组件。 Quartz工具类。
 
