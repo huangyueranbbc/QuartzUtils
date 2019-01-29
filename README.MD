@@ -31,9 +31,9 @@ Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priorit
     </repositories>
 
     <dependency>
-        <groupId>com.hyr.quartz.demo</groupId>
-        <artifactId>QuartzDemo</artifactId>
-        <version>1.0-SNAPSHOT</version>
+       <groupId>com.hyr.quartz.utils</groupId>
+       <artifactId>QuartzUtils</artifactId>
+       <version>1.0-SNAPSHOT</version>
     </dependency>
 
 
