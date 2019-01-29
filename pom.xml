@@ -58,7 +58,6 @@
         </plugins>
     </build>
 
-
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.quartz-scheduler/quartz -->
         <dependency>
