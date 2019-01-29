@@ -12,6 +12,30 @@ Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priorit
 
 4.新增MxBean坚持Java程序和任务状态。例如内存监控，死锁监控。
 
+5.已打包依赖到github仓库。
+    仓库地址:https://github.com/huangyueranbbc/QuartzUtils-1.0.0-RELEASE
+
+    pom增加配置:
+    <repositories>
+            <repository>
+                <id>QuartzUtils</id>
+                <name>QuartzUtils</name>
+                <url>https://raw.github.com/huangyueranbbc/QuartzUtils-1.0.0-RELEASE/master/</url>
+                <releases>
+                    <enabled>true</enabled>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+            </repository>
+    </repositories>
+
+    <dependency>
+        <groupId>com.hyr.quartz.demo</groupId>
+        <artifactId>QuartzDemo</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>
+
 
 # Release
 # 2019-1-14 V1.0.0
