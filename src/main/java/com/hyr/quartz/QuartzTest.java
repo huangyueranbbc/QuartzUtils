@@ -36,6 +36,7 @@ public class QuartzTest {
         props.setProperty("org.quartz.threadPool.threadPriority", "5"); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", "quartz_"); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", "scheduler_1"); // 实例名称
+        props.setProperty("org.quartz.scheduler.skipUpdateCheck","true");
 
 
         StdSchedulerFactory sf = new StdSchedulerFactory(props);

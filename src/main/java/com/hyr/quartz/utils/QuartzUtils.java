@@ -58,6 +58,7 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadNamePrefix", threadNamePrefix); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
         props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
+        props.setProperty("org.quartz.scheduler.skipUpdateCheck","true");
         return new StdSchedulerFactory(props);
     }
 
@@ -73,6 +74,7 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
         props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
+        props.setProperty("org.quartz.scheduler.skipUpdateCheck","true");
         return new StdSchedulerFactory(props);
     }
 
