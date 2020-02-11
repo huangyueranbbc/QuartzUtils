@@ -4,6 +4,7 @@ import com.hyr.quartz.job.MyJob;
 import com.hyr.quartz.listener.DefaultJobListener;
 import com.hyr.quartz.listener.DefaultSchedulerListener;
 import com.hyr.quartz.listener.DefaultTriggerListener;
+import com.hyr.quartz.service.JobService;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.plugins.history.LoggingJobHistoryPlugin;
@@ -21,6 +22,10 @@ import java.util.Properties;
  * @date 2018-11-01 下午 3:50
  * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
  * @Description: Quartz Demo
+ *
+ * @see MyJob 定时任务类,封装任务的执行逻辑
+ * @see JobService 定时任务业务类,封装了定时任务具体的业务逻辑,枚举单例模式
+ * @see QuartzUtilsTest QuartzUtils工具测试类
  ******************************************************************************/
 public class QuartzTest {
 

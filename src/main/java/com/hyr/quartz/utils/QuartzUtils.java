@@ -1,24 +1,41 @@
 package com.hyr.quartz.utils;
 
+import com.hyr.quartz.common.Constant;
+import com.hyr.quartz.common.JOB_STORE_CLASS;
+import com.hyr.quartz.job.QuartzJob;
 import com.hyr.quartz.plugin.QuartzLoggingJobHistoryPlugin;
 import com.hyr.quartz.plugin.QuartzLoggingTriggerHistoryPlugin;
 import com.hyr.quartz.plugin.QuartzShutdownHookPlugin;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.IOUtils;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Properties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /*******************************************************************************
  * @date 2018-11-13 下午 5:53
  * @author: <a href=mailto:huangyr>黄跃然</a>
  * @Description: Quartz工具类
+ *
+ * 私有全局变量放到{@link Constant}
+ * Job持久化类型{@link JOB_STORE_CLASS}
+ * Quartz工具类{@link QuartzUtils}
+ * Quartz任务日志插件{@link QuartzLoggingJobHistoryPlugin}
+ * Quartz触发器日志插件{@link QuartzLoggingTriggerHistoryPlugin}
+ * Quartz服务优雅关闭插件{@link QuartzShutdownHookPlugin}
+ * Quartz监听器{@link com.hyr.quartz.listener}
+ * ShutHook的优先级{@link HookPriority}
+ * JVM监控服务{@link MxBeanManager}
+ * 带有优先级的关闭钩子工具类{@link ShutdownHookManager}
+ * Quartz任务的抽象类,抽象封装一些通用方法{@link QuartzJob}
  ******************************************************************************/
 public class QuartzUtils {
 
@@ -50,15 +67,15 @@ public class QuartzUtils {
      * @return
      * @throws SchedulerException
      */
-    public static StdSchedulerFactory getStdSchedulerFactory(int threadCount, int threadPriority, String threadNamePrefix, String schedulerName) throws SchedulerException {
-        Properties props = new Properties();
+    public static StdSchedulerFactory getStdSchedulerFactory(int threadCount, int threadPriority, String threadNamePrefix, String schedulerName, JOB_STORE_CLASS job_store_class) throws SchedulerException {
+        Properties props = getProperties();
         props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         props.setProperty("org.quartz.threadPool.threadCount", String.valueOf(threadCount)); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(threadPriority)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", threadNamePrefix); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
-        props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
-        props.setProperty("org.quartz.scheduler.skipUpdateCheck","true");
+        props.setProperty("org.quartz.jobStore.class", job_store_class.getClassName()); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
+        props.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
         return new StdSchedulerFactory(props);
     }
 
@@ -66,16 +83,41 @@ public class QuartzUtils {
         return new StdSchedulerFactory(props);
     }
 
-    public static StdSchedulerFactory getStdSchedulerFactory(String schedulerName) throws SchedulerException {
-        Properties props = new Properties();
+    public static StdSchedulerFactory getStdSchedulerFactory(String schedulerName, JOB_STORE_CLASS job_store_class) throws SchedulerException {
+        Properties props = getProperties();
         props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         props.setProperty("org.quartz.threadPool.threadCount", "1"); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(Thread.NORM_PRIORITY)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
         props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
-        props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore"); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
-        props.setProperty("org.quartz.scheduler.skipUpdateCheck","true");
+        props.setProperty("org.quartz.jobStore.class", job_store_class.getClassName()); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
+        props.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
         return new StdSchedulerFactory(props);
+    }
+
+    /**
+     * 加载配置文件
+     *
+     * @return
+     */
+    private static Properties getProperties() {
+        InputStream inputStream = QuartzUtils.class.getClassLoader().getResourceAsStream("quartz.properties");
+        Properties props = new Properties();
+        try {
+            if (inputStream != null) {
+                props.load(inputStream);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                assert inputStream != null;
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return props;
     }
 
     /**
@@ -149,7 +191,7 @@ public class QuartzUtils {
             Trigger trigger = getTrigger(timer, jobName, groupName, statTime);
 
             scheduler.scheduleJob(jobDetail, trigger);
-            scheduler.start();
+
             log.info("job:{} is start. timer:{}", jobName, timer);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, timer:{}", jobName, timer, e);
@@ -178,7 +220,7 @@ public class QuartzUtils {
             Trigger trigger = getTrigger(timer, jobName, groupName, statTime);
 
             scheduler.scheduleJob(jobDetail, trigger);
-            scheduler.start();
+
             log.info("job:{} is start. timer:{}", jobName, timer);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, timer:{}", jobName, timer, e);
@@ -198,7 +240,6 @@ public class QuartzUtils {
     public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName) {
         long intervalTime = timeUnit.toMillis(delay);
         try {
-            addJobShutdownHook(scheduler, jobName, groupName);
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetail(job, jobName, groupName);
             long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
@@ -207,7 +248,7 @@ public class QuartzUtils {
             Trigger trigger = getSimpleTrigger(intervalTime, jobName, groupName, repeatCount, statTime);
 
             scheduler.scheduleJob(jobDetail, trigger);
-            scheduler.start();
+
             log.info("job:{} is start. delay:{}", jobName, delay);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, intervalTime:{}", jobName, intervalTime, e);
@@ -228,7 +269,6 @@ public class QuartzUtils {
     public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName, JobDataMap dataMap) {
         long intervalTime = timeUnit.toMillis(delay);
         try {
-            addJobShutdownHook(scheduler, jobName, groupName);
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetailBindData(job, jobName, groupName, dataMap);
             long tmpTime = System.currentTimeMillis() + delayMillis; //延迟启动任务时间
@@ -237,7 +277,7 @@ public class QuartzUtils {
             Trigger trigger = getSimpleTrigger(intervalTime, jobName, groupName, repeatCount, statTime);
 
             scheduler.scheduleJob(jobDetail, trigger);
-            scheduler.start();
+
             log.info("job:{} is start. delay:{}", jobName, delay);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, intervalTime:{}", jobName, intervalTime, e);
@@ -251,7 +291,7 @@ public class QuartzUtils {
 
         return TriggerBuilder.newTrigger()
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
+                .withIdentity(String.format(Constant.TRIGGER_NAME_FORMAT, jobName), String.format(Constant.TRIGGER_GROUP_NAME_FORMAT, groupName))
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(simpleScheduleBuilder) //两秒执行一次
                 .build();
@@ -275,7 +315,7 @@ public class QuartzUtils {
 
         return TriggerBuilder.newTrigger()
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
+                .withIdentity(String.format(Constant.TRIGGER_NAME_FORMAT, jobName), String.format(Constant.TRIGGER_GROUP_NAME_FORMAT, groupName))
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(simpleScheduleBuilder) //两秒执行一次
                 .usingJobData(dataMap) // 输入属性
@@ -290,7 +330,7 @@ public class QuartzUtils {
 
         return TriggerBuilder.newTrigger()
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
+                .withIdentity(String.format(Constant.TRIGGER_NAME_FORMAT, jobName), String.format(Constant.TRIGGER_GROUP_NAME_FORMAT, groupName))
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(cronScheduleBuilder) //两秒执行一次
                 .build();
@@ -314,7 +354,7 @@ public class QuartzUtils {
 
         return TriggerBuilder.newTrigger()
                 .withPriority(Trigger.DEFAULT_PRIORITY) // 优先级
-                .withIdentity("Trigger-" + jobName, "Trigger-" + groupName)
+                .withIdentity(String.format(Constant.TRIGGER_NAME_FORMAT, jobName), String.format(Constant.TRIGGER_GROUP_NAME_FORMAT, groupName))
                 .startAt(statTime)  //默认当前时间启动
                 .withSchedule(cronScheduleBuilder) //两秒执行一次
                 .usingJobData(dataMap) // 注入属性
@@ -323,9 +363,8 @@ public class QuartzUtils {
 
     private static JobDetail getJobDetail(Class<? extends Job> job, String jobName, String groupName) {
         return JobBuilder.newJob(job)
-                .storeDurably(true) // 如果一个job是非持久的，当没有活跃的trigger与之关联的时候，会被自动地从scheduler中删除
-                .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
                 .withIdentity(jobName, groupName) //job 的name和group
+                .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
                 .build();
     }
 
@@ -338,7 +377,6 @@ public class QuartzUtils {
      */
     private static JobDetail getJobDetailBindData(Class<? extends Job> job, String jobName, String groupName, JobDataMap dataMap) {
         return JobBuilder.newJob(job)
-                .storeDurably(true) // 如果一个job是非持久的，当没有活跃的trigger与之关联的时候，会被自动地从scheduler中删除
                 .requestRecovery(true) // job可恢复。scheduler发生硬关闭（hard shutdown)（比如运行的进程崩溃了，或者关机了），则当scheduler重新启动的时候，该job会被重新执行。
                 .withIdentity(jobName, groupName) //job 的name和group
                 .usingJobData(dataMap) // 属性注入
@@ -354,7 +392,86 @@ public class QuartzUtils {
      * @throws SchedulerException
      */
     public static void removeJob(Scheduler scheduler, String jobName, String groupName) throws SchedulerException {
-        scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
+        TriggerKey triggerKey = TriggerKey.triggerKey(String.format(Constant.TRIGGER_NAME_FORMAT, jobName), String.format(Constant.TRIGGER_GROUP_NAME_FORMAT, groupName));
+        scheduler.pauseTrigger(triggerKey);// 停止触发器
+        scheduler.unscheduleJob(triggerKey);// 移除触发器
+        // 获取调度器中所有的触发器组
+        List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
+        List<String> triggerNames = scheduler.getTriggerGroupNames();
+        // 重新恢复指定的触发器任务
+        for (String triggerGroupName : triggerGroupNames) {
+            for (String triggerName : triggerNames) {
+                Trigger tg = scheduler.getTrigger(new TriggerKey(triggerName, triggerGroupName));
+                // 如存在该任务,进行恢复运行
+                if (tg instanceof SimpleTrigger
+                        && tg.getDescription().equals(groupName + "." + jobName)) {
+                    System.out.println("delete成功");
+                    scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 恢复所有任务
+     *
+     * @param scheduler
+     */
+    public static void resumeAllJob(Scheduler scheduler) throws SchedulerException {
+        // 恢复所有时，该方法传入监听器中触发器的值为null,监听器可能会报控制针
+        scheduler.resumeAll();
+    }
+
+    /**
+     * 从数据库中找到指定的job，重新开始执行该定时任务
+     */
+    public static void resumeJob(Scheduler scheduler, String jobName, String groupName) throws SchedulerException {
+        scheduler.resumeJob(new JobKey(jobName, groupName));
+    }
+
+    /**
+     * 暂停所有任务
+     *
+     * @param scheduler
+     * @throws SchedulerException
+     */
+    public static void pasueAllJob(Scheduler scheduler) throws SchedulerException {
+        scheduler.pauseAll();
+    }
+
+    /**
+     * 暂停指定任务
+     *
+     * @param scheduler
+     * @param jobName
+     * @param groupName
+     * @throws SchedulerException
+     */
+    public static void pasueJob(Scheduler scheduler, String jobName, String groupName) throws SchedulerException {
+        // 获取调度器中所有的触发器组
+        List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
+        List<String> triggerNames = scheduler.getTriggerGroupNames();
+        // 重新恢复指定的触发器任务
+        for (String triggerGroupName : triggerGroupNames) {
+            for (String triggerName : triggerNames) {
+                Trigger tg = scheduler.getTrigger(new TriggerKey(triggerName, triggerGroupName));
+                // 如存在该任务,进行恢复运行
+                if (tg instanceof SimpleTrigger && tg.getDescription().equals(groupName + "." + jobName)) {
+                    scheduler.pauseJob(new JobKey(triggerName, triggerGroupName));
+                }
+            }
+        }
+    }
+
+    /**
+     * 启动命令 会启动调度访问并恢复上次持久化的任务,如任务已被删除则无法恢复
+     * @param scheduler
+     * @throws SchedulerException
+     */
+    public static void start(Scheduler scheduler) throws SchedulerException{
+        scheduler.start();
+        scheduler.resumeAll();
     }
 
     /**
@@ -429,27 +546,29 @@ public class QuartzUtils {
      * @param jobName
      * @param groupName
      */
-    public static void addJobShutdownHook(final Scheduler scheduler, final String jobName, final String groupName) {
-        Thread quartzJobShutdownHook = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    if (scheduler != null) {
-                        synchronized (scheduler) {
-                            if (!scheduler.isShutdown()) {
-                                removeJob(scheduler, jobName, groupName);
-                            }
-                            log.info("job:{} remove success.", jobName);
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName, e);
-                }
-            }
-        };
-        // 注:该优先级要比Schedule的Hook优先级高
-        shutdownHookManager.addShutdownHook(quartzJobShutdownHook, HookPriority.JOB_PRIORITY.value());
-    }
+//    @Deprecated
+//    public static void addJobShutdownHook(final Scheduler scheduler, final String jobName, final String groupName) {
+//        Thread quartzJobShutdownHook = new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    if (scheduler != null) {
+//                        synchronized (scheduler) {
+//                            if (!scheduler.isShutdown()) {
+//                                System.out.println("开始移除所有任务");
+//                                removeJob(scheduler, jobName, groupName);
+//                            }
+//                            log.info("job:{} remove success.", jobName);
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    log.error("delete job error. jobName:{}, groupName:{}", jobName, groupName, e);
+//                }
+//            }
+//        };
+//        // 注:该优先级要比Schedule的Hook优先级高
+//        shutdownHookManager.addShutdownHook(quartzJobShutdownHook, HookPriority.JOB_PRIORITY.value());
+//    }
 
     /**
      * Scheduler ShutdownHook

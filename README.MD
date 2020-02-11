@@ -48,6 +48,7 @@ Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priorit
     6、提供优化的Listener监听器。 可以定制修改。
     7、支持日志级别设置。
     8、提供测试入口。
+    9、新增Job持久化策略。  
 
 更新中......
 

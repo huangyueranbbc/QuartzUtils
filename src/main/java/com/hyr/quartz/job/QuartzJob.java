@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * @author: <a href=mailto:huangyr>黄跃然</a>
  * @Description: Quartz任务抽象类
  ******************************************************************************/
-abstract class QuartzJob implements Job {
+public abstract class QuartzJob implements Job {
 
     private static Logger log = LoggerFactory.getLogger(QuartzJob.class);
 

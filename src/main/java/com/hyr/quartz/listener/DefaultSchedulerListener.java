@@ -154,9 +154,7 @@ public class DefaultSchedulerListener implements SchedulerListener {
 
     @Override
     public void triggerResumed(TriggerKey triggerKey) {
-        String triggerName = triggerKey.getName();
-        log.info(getName() + " - the trigger is resumed. triggerName:{}", triggerName);
-
+        log.info(getName() + " - the trigger is resumed. triggerKey:{}", triggerKey);
     }
 
 }
