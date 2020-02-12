@@ -67,13 +67,12 @@ public class QuartzUtils {
      * @return
      * @throws SchedulerException
      */
-    public static StdSchedulerFactory getStdSchedulerFactory(int threadCount, int threadPriority, String threadNamePrefix, String schedulerName, JOB_STORE_CLASS job_store_class) throws SchedulerException {
+    public static StdSchedulerFactory getStdSchedulerFactory(int threadCount, int threadPriority, String threadNamePrefix, JOB_STORE_CLASS job_store_class) throws SchedulerException {
         Properties props = getProperties();
         props.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         props.setProperty("org.quartz.threadPool.threadCount", String.valueOf(threadCount)); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(threadPriority)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", threadNamePrefix); // 工作线程池中线程名称的前缀将被附加前缀
-        props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
         props.setProperty("org.quartz.jobStore.class", job_store_class.getClassName()); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
         props.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
         return new StdSchedulerFactory(props);
@@ -89,7 +88,6 @@ public class QuartzUtils {
         props.setProperty("org.quartz.threadPool.threadCount", "1"); // 线程数
         props.setProperty("org.quartz.threadPool.threadPriority", String.valueOf(Thread.NORM_PRIORITY)); // 线程优先级 5默认优先级
         props.setProperty("org.quartz.threadPool.threadNamePrefix", schedulerName); // 工作线程池中线程名称的前缀将被附加前缀
-        props.setProperty("org.quartz.scheduler.instanceName", schedulerName); // 实例名称
         props.setProperty("org.quartz.jobStore.class", job_store_class.getClassName()); // 将job数据保存在ram,性能最高。但程序崩溃，job调度数据会丢失。
         props.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
         return new StdSchedulerFactory(props);
@@ -466,10 +464,11 @@ public class QuartzUtils {
 
     /**
      * 启动命令 会启动调度访问并恢复上次持久化的任务,如任务已被删除则无法恢复
+     *
      * @param scheduler
      * @throws SchedulerException
      */
-    public static void start(Scheduler scheduler) throws SchedulerException{
+    public static void start(Scheduler scheduler) throws SchedulerException {
         scheduler.start();
         scheduler.resumeAll();
     }

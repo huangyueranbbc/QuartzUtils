@@ -50,10 +50,10 @@ public class QuartzUtilsTest {
 
 
     public static void main(String[] args) throws SchedulerException {
-        StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB1", "UPLOAD_JOB1", JOB_STORE_CLASS.JOBSTORETX);
+        StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB1", JOB_STORE_CLASS.JOBSTORETX);
         Scheduler scheduler = schedulerFactory1.getScheduler();
 
-        StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB2", "UPLOAD_JOB2", JOB_STORE_CLASS.JOBSTORETX);
+        StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB2", JOB_STORE_CLASS.JOBSTORETX);
         Scheduler scheduler2 = schedulerFactory2.getScheduler();
 
         //QuartzUtils.addSchedulerShutdownHook(scheduler);
