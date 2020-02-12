@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 /*******************************************************************************
  * @date 2018-11-11 下午 11:11
- * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
+ * @author: <a href=mailto:huangyr>黄跃然</a>
  * @Description: SchedulerListener 调度器监听
  ******************************************************************************/
 public class DefaultSchedulerListener implements SchedulerListener {

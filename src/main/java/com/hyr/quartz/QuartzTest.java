@@ -20,7 +20,7 @@ import java.util.Properties;
 
 /*******************************************************************************
  * @date 2018-11-01 下午 3:50
- * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
+ * @author: <a href=mailto:huangyr>黄跃然</a>
  * @Description: Quartz Demo
  *
  * @see MyJob 定时任务类,封装任务的执行逻辑

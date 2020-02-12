@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /*******************************************************************************
  * @date 2018-11-11 下午 11:11
- * @author: <a href=mailto:huangyr@bonree.com>黄跃然</a>
+ * @author: <a href=mailto:huangyr>黄跃然</a>
  * @Description: JobListener 任务监听器
  ******************************************************************************/
 public class DefaultJobListener implements JobListener {
