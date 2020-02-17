@@ -49,58 +49,60 @@ public class QuartzUtilsTest {
     private static final String GROUP_NAME = "QUARTZ-JOB-GROUP";
 
 
-    public static void main(String[] args) throws SchedulerException {
-        StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB1", JOB_STORE_CLASS.JOBSTORETX);
-        Scheduler scheduler = schedulerFactory1.getScheduler();
+    public static void main(String[] args) {
+        try {
 
-        StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB2", JOB_STORE_CLASS.JOBSTORETX);
-        Scheduler scheduler2 = schedulerFactory2.getScheduler();
+            StdSchedulerFactory schedulerFactory1 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB1", JOB_STORE_CLASS.JOBSTORETX);
+            Scheduler scheduler = schedulerFactory1.getScheduler();
 
-        //QuartzUtils.addSchedulerShutdownHook(scheduler);
-        //QuartzUtils.addSchedulerShutdownHook(scheduler2);
+            StdSchedulerFactory schedulerFactory2 = QuartzUtils.getStdSchedulerFactory(2, Thread.NORM_PRIORITY, "UPLOAD_JOB2", JOB_STORE_CLASS.JOBSTORETX);
+            Scheduler scheduler2 = schedulerFactory2.getScheduler();
 
-        QuartzUtils.startLogPlugin(scheduler, QuartzUtils.LOG_INFO); // 启动日志插件
-        QuartzUtils.startShutDownHookPlugin(scheduler); // 启动ShutDownHook插件
+            //QuartzUtils.addSchedulerShutdownHook(scheduler);
+            //QuartzUtils.addSchedulerShutdownHook(scheduler2);
+
+            QuartzUtils.startLogPlugin(scheduler, QuartzUtils.LOG_INFO); // 启动日志插件
+            QuartzUtils.startShutDownHookPlugin(scheduler); // 启动ShutDownHook插件
 
 
-        QuartzUtils.startLogPlugin(scheduler2, QuartzUtils.LOG_DEBUG); // 启动日志插件
-        QuartzUtils.startShutDownHookPlugin(scheduler2); // 启动ShutDownHook插件
+            QuartzUtils.startLogPlugin(scheduler2, QuartzUtils.LOG_DEBUG); // 启动日志插件
+            QuartzUtils.startShutDownHookPlugin(scheduler2); // 启动ShutDownHook插件
 
-        // 绑定单个Listener监听器
-        QuartzUtils.bindSchedulerListenerManager(scheduler, new DefaultSchedulerListener("DefaultSchedulerListener"), new DefaultJobListener("DefaultJobListener"), new DefaultTriggerListener("DefaultTriggerListener"));
-        QuartzUtils.bindSchedulerListenerManager(scheduler2, new DefaultSchedulerListener("DefaultSchedulerListener"), new DefaultJobListener("DefaultJobListener"), new DefaultTriggerListener("DefaultTriggerListener"));
+            // 绑定单个Listener监听器
+            QuartzUtils.bindSchedulerListenerManager(scheduler, new DefaultSchedulerListener("DefaultSchedulerListener"), new DefaultJobListener("DefaultJobListener"), new DefaultTriggerListener("DefaultTriggerListener"));
+            QuartzUtils.bindSchedulerListenerManager(scheduler2, new DefaultSchedulerListener("DefaultSchedulerListener"), new DefaultJobListener("DefaultJobListener"), new DefaultTriggerListener("DefaultTriggerListener"));
 
-        // 绑定多个Listener监听器
-        List<SchedulerListener> schedulerListeners = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            schedulerListeners.add(new DefaultSchedulerListener("SchedulerListener--" + i));
-        }
+            // 绑定多个Listener监听器
+            List<SchedulerListener> schedulerListeners = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                schedulerListeners.add(new DefaultSchedulerListener("SchedulerListener--" + i));
+            }
 
-        List<JobListener> jobListeners = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            jobListeners.add(new DefaultJobListener("JobListener--" + i));
-        }
+            List<JobListener> jobListeners = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                jobListeners.add(new DefaultJobListener("JobListener--" + i));
+            }
 
-        List<TriggerListener> triggerListeners = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            triggerListeners.add(new DefaultTriggerListener("TriggerListener--" + i));
-        }
-        // QuartzUtils.bindSchedulerListenerManagers(scheduler, schedulerListeners, jobListeners, triggerListeners);
+            List<TriggerListener> triggerListeners = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                triggerListeners.add(new DefaultTriggerListener("TriggerListener--" + i));
+            }
+            // QuartzUtils.bindSchedulerListenerManagers(scheduler, schedulerListeners, jobListeners, triggerListeners);
 
-        // 注入属性Map
-        JobDataMap dataMap = new JobDataMap();
-        dataMap.put("jobDesc", "job desc.");
+            // 注入属性Map
+            JobDataMap dataMap = new JobDataMap();
+            dataMap.put("jobDesc", "job desc.");
 
-        // 执行定时任务
-        QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", GROUP_NAME);
+            // 执行定时任务
+            QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", GROUP_NAME);
 
-        // 删除任务,如果任务被删除，该持久化信息也会清除,该任务无法恢复
-        // QuartzUtils.removeJob(scheduler,"ProducerJob", GROUP_NAME);
+            // 删除任务,如果任务被删除，该持久化信息也会清除,该任务无法恢复
+            // QuartzUtils.removeJob(scheduler,"ProducerJob", GROUP_NAME);
 
-        QuartzUtils.start(scheduler);
+            QuartzUtils.start(scheduler);
 
-        // 注入属性
-        //QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 2, TimeUnit.SECONDS, -1, "ProducerJobData1", GROUP_NAME, dataMap);
+            // 注入属性
+            //QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 2, TimeUnit.SECONDS, -1, "ProducerJobData1", GROUP_NAME, dataMap);
 
 //        try {
 //            Thread.sleep(10000);
@@ -134,7 +136,10 @@ public class QuartzUtilsTest {
 //        System.out.println("移除任务成功!");
 
 
-        //System.exit(0);
+            //System.exit(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

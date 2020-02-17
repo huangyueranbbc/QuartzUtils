@@ -8,16 +8,17 @@ import com.hyr.quartz.plugin.QuartzLoggingTriggerHistoryPlugin;
 import com.hyr.quartz.plugin.QuartzShutdownHookPlugin;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /*******************************************************************************
@@ -63,7 +64,6 @@ public class QuartzUtils {
      * @param threadCount      线程数
      * @param threadPriority   线程优先级 5默认优先级
      * @param threadNamePrefix 工作线程池中线程名称的前缀将被附加前缀
-     * @param schedulerName    实例名称
      * @return
      * @throws SchedulerException
      */
@@ -179,7 +179,7 @@ public class QuartzUtils {
      * @param jobName      任务名称
      * @param groupName    组名
      */
-    public static void scheduleWithFixedDelayByCron(Scheduler scheduler, Class<? extends Job> job, long initialDelay, TimeUnit timeUnit, String timer, String jobName, String groupName) {
+    public static void scheduleWithFixedDelayByCron(Scheduler scheduler, Class<? extends Job> job, long initialDelay, TimeUnit timeUnit, String timer, String jobName, String groupName) throws SchedulerException {
         try {
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetail(job, jobName, groupName);
@@ -193,6 +193,7 @@ public class QuartzUtils {
             log.info("job:{} is start. timer:{}", jobName, timer);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, timer:{}", jobName, timer, e);
+            throw e;
         }
     }
 
@@ -208,7 +209,7 @@ public class QuartzUtils {
      * @param groupName    组名
      * @param dataMap      属性注入 以JavaBean的形式注入，需要该属性名和set方法
      */
-    public static void scheduleWithFixedDelayByCron(Scheduler scheduler, Class<? extends Job> job, long initialDelay, TimeUnit timeUnit, String timer, String jobName, String groupName, JobDataMap dataMap) {
+    public static void scheduleWithFixedDelayByCron(Scheduler scheduler, Class<? extends Job> job, long initialDelay, TimeUnit timeUnit, String timer, String jobName, String groupName, JobDataMap dataMap) throws SchedulerException {
         try {
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
             JobDetail jobDetail = getJobDetailBindData(job, jobName, groupName, dataMap);
@@ -222,6 +223,7 @@ public class QuartzUtils {
             log.info("job:{} is start. timer:{}", jobName, timer);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, timer:{}", jobName, timer, e);
+            throw e;
         }
     }
 
@@ -235,7 +237,7 @@ public class QuartzUtils {
      * @param jobName      任务名称
      * @param groupName    组名
      */
-    public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName) {
+    public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName) throws SchedulerException {
         long intervalTime = timeUnit.toMillis(delay);
         try {
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
@@ -250,6 +252,7 @@ public class QuartzUtils {
             log.info("job:{} is start. delay:{}", jobName, delay);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, intervalTime:{}", jobName, intervalTime, e);
+            throw e;
         }
     }
 
@@ -264,7 +267,7 @@ public class QuartzUtils {
      * @param groupName    组名
      * @param dataMap      属性注入 以JavaBean的形式注入，需要该属性名和set方法
      */
-    public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName, JobDataMap dataMap) {
+    public static void scheduleWithFixedDelay(Scheduler scheduler, Class<? extends Job> job, long initialDelay, long delay, TimeUnit timeUnit, int repeatCount, String jobName, String groupName, JobDataMap dataMap) throws SchedulerException {
         long intervalTime = timeUnit.toMillis(delay);
         try {
             long delayMillis = timeUnit.toMillis(initialDelay); // 延时启动时间
@@ -279,6 +282,7 @@ public class QuartzUtils {
             log.info("job:{} is start. delay:{}", jobName, delay);
         } catch (Exception e) {
             log.error("add job error. jobName:{}, intervalTime:{}", jobName, intervalTime, e);
+            throw e;
         }
     }
 
@@ -403,12 +407,12 @@ public class QuartzUtils {
                 // 如存在该任务,进行恢复运行
                 if (tg instanceof SimpleTrigger
                         && tg.getDescription().equals(groupName + "." + jobName)) {
-                    System.out.println("delete成功");
-                    scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
+                    boolean result = scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
+                    log.info("delete job result:{}", result);
+                    System.out.println("delete job !!!!!!");
                 }
             }
         }
-
     }
 
     /**

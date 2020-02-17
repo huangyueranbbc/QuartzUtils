@@ -38,7 +38,7 @@ Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priorit
 
 
 # Release
-# 2020-2-14 V1.1.0
+# 2020-2-16 V2.0.0
     1、支持延迟定时任务。
     2、简化调用Quartz过程。一行代码搞定。
     QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", "QUARTZ-JOB-GROUP");
