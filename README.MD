@@ -49,7 +49,9 @@ Job、Trigger、JobDetail、Listener、JobExecutionException、misfire、Priorit
     7、支持日志级别设置。
     8、提供测试入口。
     9、新增Job持久化策略。  
-    10、增加集群模式。  
+    10、增加集群模式。 
+    11、使用Druid连接池替换默认的c3p0连接池。  
+    12、支持导入外部配置。  
 
 更新中......
 

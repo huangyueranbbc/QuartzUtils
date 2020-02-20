@@ -13,8 +13,7 @@ import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -99,18 +98,32 @@ public class QuartzUtils {
      * @return
      */
     private static Properties getProperties() {
-        InputStream inputStream = QuartzUtils.class.getClassLoader().getResourceAsStream("quartz.properties");
         Properties props = new Properties();
+        InputStream inputStream = null;
         try {
+            // 获取进程内环境变量中quartz配置路径
+            String configPath = System.getProperty("quartz.config", "");
+            File file = new File(configPath);
+            if (file.exists() && configPath.length() != 0) {
+                log.info("init quartz external configuration. path:{}", file.getPath());
+                // 文件存在
+                inputStream = new BufferedInputStream(new FileInputStream(file));
+            } else {
+                // 文件不存在,在家项目中的默认配置
+                log.info("init quartz default configuration.");
+                inputStream = QuartzUtils.class.getClassLoader().getResourceAsStream("quartz.properties");
+            }
+
             if (inputStream != null) {
                 props.load(inputStream);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("get quartz properties error.", e);
         } finally {
             try {
-                assert inputStream != null;
-                inputStream.close();
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
