@@ -94,7 +94,7 @@ public class QuartzUtilsTest {
             dataMap.put("jobDesc", "job desc.");
 
             // 执行定时任务
-            QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", GROUP_NAME);
+           // QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", GROUP_NAME);
 
             // 删除任务,如果任务被删除，该持久化信息也会清除,该任务无法恢复
             // QuartzUtils.removeJob(scheduler,"ProducerJob", GROUP_NAME);
