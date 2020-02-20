@@ -102,15 +102,15 @@ public class QuartzUtils {
         InputStream inputStream = null;
         try {
             // 获取进程内环境变量中quartz配置路径
-            String configPath = System.getProperty("quartz.config", "");
+            String configPath = System.getProperty(Constant.QUARTZ_CONF_ENV_NAME, "");
             File file = new File(configPath);
-            if (file.exists() && configPath.length() != 0) {
-                log.info("init quartz external configuration. path:{}", file.getPath());
+            if (file.isFile() && configPath.length() != 0) {
+                log.info("load quartz external configuration. path:{}", file.getPath());
                 // 文件存在
                 inputStream = new BufferedInputStream(new FileInputStream(file));
             } else {
                 // 文件不存在,在家项目中的默认配置
-                log.info("init quartz default configuration.");
+                log.info("load quartz default configuration.");
                 inputStream = QuartzUtils.class.getClassLoader().getResourceAsStream("quartz.properties");
             }
 
