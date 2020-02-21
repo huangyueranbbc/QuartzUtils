@@ -111,7 +111,7 @@ public class QuartzUtils {
             } else {
                 // 文件不存在,在家项目中的默认配置
                 log.info("load quartz default configuration.");
-                inputStream = QuartzUtils.class.getClassLoader().getResourceAsStream("quartz.properties");
+                inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("quartz.properties");
             }
 
             if (inputStream != null) {
