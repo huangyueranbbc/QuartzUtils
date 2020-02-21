@@ -15,7 +15,7 @@ import java.sql.SQLException;
  ******************************************************************************/
 public class DruidConnectionPoolProvider implements ConnectionProvider {
 
-    private static Logger log = LoggerFactory.getLogger(DruidConnectionPoolProvider.class);
+    private final static Logger log = LoggerFactory.getLogger(DruidConnectionPoolProvider.class);
 
     /*
      * Druid 参数信息

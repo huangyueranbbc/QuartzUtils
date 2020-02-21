@@ -11,7 +11,7 @@ import java.util.Random;
 public enum JobService {
     instances;
 
-    private static Logger log = LoggerFactory.getLogger(JobService.class);
+    private final static Logger log = LoggerFactory.getLogger(JobService.class);
 
     public void update() {
         System.out.println("the job is run......");

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  ******************************************************************************/
 public abstract class QuartzJob implements Job {
 
-    private static Logger log = LoggerFactory.getLogger(QuartzJob.class);
+    private final static Logger log = LoggerFactory.getLogger(QuartzJob.class);
 
     private int CUR_RETRY_COUNT = 0;
     private static int MAX_RETRY_COUNT = 3; // 任务执行失败，最大重试次数

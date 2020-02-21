@@ -11,8 +11,8 @@ import java.util.Date;
 @PersistJobDataAfterExecution // 每次执行JOB后，更新Job内容
 public class MyJob extends QuartzJob {
 
-    //    private static Logger _log = Logger.getLogger(MyJob.class);
-    private static Logger _log = LoggerFactory.getLogger(MyJob.class);
+    //    private final static Logger _log = Logger.getLogger(MyJob.class);
+    private final static Logger _log = LoggerFactory.getLogger(MyJob.class);
 
     // 属性注入
     private String jobDesc;

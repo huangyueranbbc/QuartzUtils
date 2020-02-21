@@ -17,6 +17,8 @@ import com.hyr.quartz.utils.QuartzUtils;
 import com.hyr.quartz.utils.ShutdownHookManager;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +48,10 @@ import java.util.concurrent.TimeUnit;
  ******************************************************************************/
 public class QuartzUtilsTest {
 
-    private static final String GROUP_NAME = "QUARTZ-JOB-GROUP";
+    private final static Logger log = LoggerFactory.getLogger(QuartzUtilsTest.class);
 
+
+    private static final String GROUP_NAME = "QUARTZ-JOB-GROUP";
 
     public static void main(String[] args) {
         try {
@@ -94,12 +98,27 @@ public class QuartzUtilsTest {
             dataMap.put("jobDesc", "job desc.");
 
             // 执行定时任务
-           // QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob", GROUP_NAME);
+            //QuartzUtils.scheduleWithFixedDelay(scheduler, MyJob.class, 0, 1, TimeUnit.SECONDS, -1, "ProducerJob1", GROUP_NAME);
 
             // 删除任务,如果任务被删除，该持久化信息也会清除,该任务无法恢复
             // QuartzUtils.removeJob(scheduler,"ProducerJob", GROUP_NAME);
 
             QuartzUtils.start(scheduler);
+
+
+            // 获取当前运行中的所有任务详情
+            Thread.sleep(10000); // 等待任务启动
+            List<JobExecutionContext> jobExecutionContexts = QuartzUtils.listExecutingJobs(scheduler);
+            log.info("jobs size:{}", jobExecutionContexts.size());
+            for (JobExecutionContext jobExecutionContext : jobExecutionContexts) {
+                log.info("job:{}", jobExecutionContext.getJobDetail());
+            }
+
+            // 获取指定的运行任务,为null表示不存子啊
+            JobExecutionContext aaa = QuartzUtils.getExecutingJobsByJobName(scheduler, "aaa");
+            log.info("aaa:{}", aaa);
+            JobExecutionContext producerJob = QuartzUtils.getExecutingJobsByJobName(scheduler, "ProducerJob");
+            log.info("producerJob:{}", producerJob);
 
             // 注入属性
             //QuartzUtils.scheduleWithFixedDelay(scheduler2, MyJob.class, 0, 2, TimeUnit.SECONDS, -1, "ProducerJobData1", GROUP_NAME, dataMap);

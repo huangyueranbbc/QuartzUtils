@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  ******************************************************************************/
 public class DefaultSchedulerListener implements SchedulerListener {
 
-    private static Logger log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
 
     private String name; // 监听器名称
 

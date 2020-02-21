@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * priority.
  */
 public class ShutdownHookManager {
-    private static Logger log = LoggerFactory.getLogger(ShutdownHookManager.class);
+    private final static Logger log = LoggerFactory.getLogger(ShutdownHookManager.class);
 
     private static final ShutdownHookManager MGR = new ShutdownHookManager();
 

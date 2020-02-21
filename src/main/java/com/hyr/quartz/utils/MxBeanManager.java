@@ -38,7 +38,7 @@ public class MxBeanManager {
         MxBeanManager.log_level = log_level;
     }
 
-    private static Logger log = LoggerFactory.getLogger(MxBeanManager.class);
+    private final static Logger log = LoggerFactory.getLogger(MxBeanManager.class);
 
     private static String heapMemoryMessage = "heapMemory: {0}";
     private static String nonheapMemoryMessage = "nonHeapMemory: {0}";

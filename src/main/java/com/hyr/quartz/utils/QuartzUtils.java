@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  ******************************************************************************/
 public class QuartzUtils {
 
-    private static Logger log = LoggerFactory.getLogger(QuartzUtils.class);
+    private final static Logger log = LoggerFactory.getLogger(QuartzUtils.class);
 
     private static ShutdownHookManager shutdownHookManager = ShutdownHookManager.get(); // shutdownhook
 
@@ -453,6 +453,28 @@ public class QuartzUtils {
      */
     public static void pasueAllJob(Scheduler scheduler) throws SchedulerException {
         scheduler.pauseAll();
+    }
+
+    /**
+     * 获取当前所有运行的任务
+     */
+    public static List<JobExecutionContext> listExecutingJobs(Scheduler scheduler) throws SchedulerException {
+        return scheduler.getCurrentlyExecutingJobs();
+    }
+
+    /**
+     * 获取运行中指定的任务
+     */
+    public static JobExecutionContext getExecutingJobsByJobName(Scheduler scheduler, String jobName) throws SchedulerException {
+        List<JobExecutionContext> jobContexts = scheduler.getCurrentlyExecutingJobs();
+        for (JobExecutionContext context : jobContexts) {
+            // 该任务名存在,表示任务正在执行
+            if (jobName.equals(context.getTrigger().getJobKey().getName())) {
+                return context;
+            }
+        }
+        return null;
+
     }
 
     /**

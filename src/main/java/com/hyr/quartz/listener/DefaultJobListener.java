@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  ******************************************************************************/
 public class DefaultJobListener implements JobListener {
 
-    private static Logger log = LoggerFactory.getLogger(DefaultJobListener.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultJobListener.class);
 
     private String name; // 监听器名称
 

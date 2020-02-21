@@ -29,7 +29,7 @@ import java.util.Properties;
  ******************************************************************************/
 public class QuartzTest {
 
-    private static Logger _log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
+    private final static Logger _log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
 
     public static void main(String[] args) throws SchedulerException {
 

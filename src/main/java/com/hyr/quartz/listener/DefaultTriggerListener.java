@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  ******************************************************************************/
 public class DefaultTriggerListener implements TriggerListener {
 
-    private static Logger log = LoggerFactory.getLogger(DefaultTriggerListener.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultTriggerListener.class);
 
     private String name; // 监听器名称
 
