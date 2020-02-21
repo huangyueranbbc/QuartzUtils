@@ -8,16 +8,14 @@ import com.hyr.quartz.plugin.QuartzLoggingTriggerHistoryPlugin;
 import com.hyr.quartz.plugin.QuartzShutdownHookPlugin;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.quartz.spi.SchedulerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /*******************************************************************************
@@ -456,28 +454,6 @@ public class QuartzUtils {
     }
 
     /**
-     * 获取当前所有运行的任务
-     */
-    public static List<JobExecutionContext> listExecutingJobs(Scheduler scheduler) throws SchedulerException {
-        return scheduler.getCurrentlyExecutingJobs();
-    }
-
-    /**
-     * 获取运行中指定的任务
-     */
-    public static JobExecutionContext getExecutingJobsByJobName(Scheduler scheduler, String jobName) throws SchedulerException {
-        List<JobExecutionContext> jobContexts = scheduler.getCurrentlyExecutingJobs();
-        for (JobExecutionContext context : jobContexts) {
-            // 该任务名存在,表示任务正在执行
-            if (jobName.equals(context.getTrigger().getJobKey().getName())) {
-                return context;
-            }
-        }
-        return null;
-
-    }
-
-    /**
      * 暂停指定任务
      *
      * @param scheduler
@@ -500,6 +476,56 @@ public class QuartzUtils {
             }
         }
     }
+
+    /**
+     * 获取当前所有运行的任务
+     */
+    public static List<JobExecutionContext> listExecutingJobs(Scheduler scheduler) throws SchedulerException {
+        return scheduler.getCurrentlyExecutingJobs();
+    }
+
+    /**
+     * 获取运行中指定的任务
+     */
+    public static JobExecutionContext getExecutingJobsByJobName(Scheduler scheduler, String jobName) throws SchedulerException {
+        List<JobExecutionContext> jobContexts = scheduler.getCurrentlyExecutingJobs();
+        for (JobExecutionContext context : jobContexts) {
+            // 该任务名存在,表示任务正在执行
+            if (jobName.equals(context.getTrigger().getJobKey().getName())) {
+                return context;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取系统中已添加的所有任务
+     *
+     * @param scheduler
+     * @return
+     */
+    public static Set<JobKey> listJobs(Scheduler scheduler) throws SchedulerException {
+        Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.<JobKey>anyGroup());
+        return jobKeys;
+    }
+
+    /**
+     * 获取系统中已添加的指定的任务
+     *
+     * @param scheduler
+     * @return
+     */
+    public static JobKey getJobByGroupAndName(Scheduler scheduler, String jobGroupName, String jobName) throws SchedulerException {
+        Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.<JobKey>anyGroup());
+        for (JobKey jobKey : jobKeys) {
+            String key = jobKey.getGroup() + "." + jobKey.getName();
+            if (key.equals(jobGroupName + "." + jobName)) {
+                return jobKey;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * 启动命令 会启动调度访问并恢复上次持久化的任务,如任务已被删除则无法恢复

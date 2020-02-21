@@ -111,6 +111,7 @@ public class QuartzUtilsTest {
             List<JobExecutionContext> jobExecutionContexts = QuartzUtils.listExecutingJobs(scheduler);
             log.info("jobs size:{}", jobExecutionContexts.size());
             for (JobExecutionContext jobExecutionContext : jobExecutionContexts) {
+                log.info("jobExecutionContext:{}", jobExecutionContext);
                 log.info("job:{}", jobExecutionContext.getJobDetail());
             }
 
