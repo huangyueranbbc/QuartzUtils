@@ -39,9 +39,13 @@ public class QuartzUtils {
 
     private final static Logger log = LoggerFactory.getLogger(QuartzUtils.class);
 
-    private static ShutdownHookManager shutdownHookManager = ShutdownHookManager.get(); // shutdownhook
+    private static ShutdownHookManager shutdownHookManager = ShutdownHookManager.get();
+
+    // quartz配置文件
+    private volatile static Properties properties = null;
 
     // QuartzLoggingPlugin 日志级别
+
     @SuppressWarnings("WeakerAccess")
     public final static int LOG_TRACE = 0;
 
@@ -95,38 +99,45 @@ public class QuartzUtils {
      *
      * @return
      */
-    private static Properties getProperties() {
-        Properties props = new Properties();
-        InputStream inputStream = null;
-        try {
-            // 获取进程内环境变量中quartz配置路径
-            String configPath = System.getProperty(Constant.QUARTZ_CONF_ENV_NAME, "");
-            File file = new File(configPath);
-            if (file.isFile() && configPath.length() != 0) {
-                log.info("load quartz external configuration. path:{}", file.getPath());
-                // 文件存在
-                inputStream = new BufferedInputStream(new FileInputStream(file));
-            } else {
-                // 文件不存在,在家项目中的默认配置
-                log.info("load quartz default configuration.");
-                inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("quartz.properties");
-            }
+    public static Properties getProperties() {
+        if (properties == null) {
+            synchronized (Properties.class) {
+                if (properties == null) {
+                    Properties props = new Properties();
+                    InputStream inputStream = null;
+                    try {
+                        // 获取进程内环境变量中quartz配置路径
+                        String configPath = System.getProperty(Constant.QUARTZ_CONF_ENV_NAME, "");
+                        File file = new File(configPath);
+                        if (file.isFile() && configPath.length() != 0) {
+                            log.info("load quartz external configuration. path:{}", file.getPath());
+                            // 文件存在
+                            inputStream = new BufferedInputStream(new FileInputStream(file));
+                        } else {
+                            // 文件不存在,在家项目中的默认配置
+                            log.info("load quartz default configuration.");
+                            inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("quartz.properties");
+                        }
 
-            if (inputStream != null) {
-                props.load(inputStream);
-            }
-        } catch (Exception e) {
-            log.error("get quartz properties error.", e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
+                        if (inputStream != null) {
+                            props.load(inputStream);
+                        }
+                        properties = props;
+                    } catch (Exception e) {
+                        log.error("get quartz properties error.", e);
+                    } finally {
+                        try {
+                            if (inputStream != null) {
+                                inputStream.close();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
-        return props;
+        return properties;
     }
 
     /**
