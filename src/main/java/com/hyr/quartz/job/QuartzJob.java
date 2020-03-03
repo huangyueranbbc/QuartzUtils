@@ -15,8 +15,21 @@ public abstract class QuartzJob implements Job {
 
     private final static Logger log = LoggerFactory.getLogger(QuartzJob.class);
 
-    private int CUR_RETRY_COUNT = 0;
-    private static int MAX_RETRY_COUNT = 3; // 任务执行失败，最大重试次数
+    private static int CUR_RETRY_COUNT;
+
+    static {
+        CUR_RETRY_COUNT = 0;
+    }
+
+    /**
+     * 任务执行失败，最大重试次数
+     */
+    @SuppressWarnings("FieldCanBeLocal")
+    private static int MAX_RETRY_COUNT;
+
+    static {
+        MAX_RETRY_COUNT = 3;
+    }
 
     void retryExecJob(Exception e, JobExecutionContext jobExecutionContext) throws JobExecutionException {
         String jobName = jobExecutionContext.getJobDetail().getKey().getName();

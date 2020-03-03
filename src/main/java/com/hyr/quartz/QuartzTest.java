@@ -29,7 +29,7 @@ import java.util.Properties;
  ******************************************************************************/
 public class QuartzTest {
 
-    private final static Logger _log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultSchedulerListener.class);
 
     public static void main(String[] args) throws SchedulerException {
 
@@ -47,8 +47,8 @@ public class QuartzTest {
         StdSchedulerFactory sf = new StdSchedulerFactory(props);
         //2.从工厂中获取调度器实例
         Scheduler scheduler1 = sf.getScheduler();
-        System.out.println(scheduler1.getSchedulerName());
-        System.out.println(sf.getAllSchedulers().size());
+        log.info("name:{}",scheduler1.getSchedulerName());
+        log.info("size:{}",sf.getAllSchedulers().size());
 
         // shutdownhook plugin
         ShutdownHookPlugin shutdownHookPlugin = new ShutdownHookPlugin();
@@ -131,7 +131,7 @@ public class QuartzTest {
 
         //6.启动 调度器
         scheduler1.start();
-        _log.info("启动时间 ： " + new Date());
+        log.info("启动时间 ： " + new Date());
 
 //        try {
 //            Thread.sleep(5000);

@@ -14,7 +14,7 @@ public enum JobService {
     private final static Logger log = LoggerFactory.getLogger(JobService.class);
 
     public void update() {
-        System.out.println("the job is run......");
+        log.info("the job is run......");
         int runTime = new Random().nextInt(5);
         log.info("runTime:{}", runTime);
         for (int i = 1; i <= runTime; i++) {
@@ -22,7 +22,7 @@ public enum JobService {
                 log.info("the job is run.... times:{}", i);
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("update error.",e);
             }
 
         }

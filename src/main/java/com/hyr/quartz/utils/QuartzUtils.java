@@ -131,7 +131,7 @@ public class QuartzUtils {
                                 inputStream.close();
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            log.error("input stream close error.",e);
                         }
                     }
                 }
@@ -431,7 +431,6 @@ public class QuartzUtils {
                         && tg.getDescription().equals(groupName + "." + jobName)) {
                     boolean result = scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
                     log.info("delete job result:{}", result);
-                    System.out.println("delete job !!!!!!");
                 }
             }
         }
@@ -516,8 +515,7 @@ public class QuartzUtils {
      * @return
      */
     public static Set<JobKey> listJobs(Scheduler scheduler) throws SchedulerException {
-        Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.<JobKey>anyGroup());
-        return jobKeys;
+        return scheduler.getJobKeys(GroupMatcher.<JobKey>anyGroup());
     }
 
     /**
